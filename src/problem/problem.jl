@@ -148,6 +148,19 @@ function expand_vector(v::AbstractVector{T}, inds::AbstractVector{Int}, n::Int) 
 	return V
 end
 
+################################################################################
+# GameConstraintSet
+################################################################################
+
+mutable struct GameConstraintList
+	p::Int
+	conlist::Vector{TrajectoryOptimization.AbstractConstraintSet}
+end
+
+function GameConstraintList(conlists::Vector{<:TrajectoryOptimization.AbstractConstraintSet})
+	p = length(conlists)
+	return GameConstraintList(p, conlists)
+end
 
 ################################################################################
 # GameProblem
@@ -164,7 +177,7 @@ mutable struct GameProblem12{SVx}
 end
 
 function GameProblem12(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Options,
-	# cost::GameCost, con::GameConstraintSet
+	# cost::GameObjective, con::GameConstraintSet
 	) where {T,SVx}
 
 	probsize = ProblemSize(N,model)
@@ -175,26 +188,15 @@ function GameProblem12(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::O
 end
 
 
-
+#
 # T = Float64
 # N = 10
 # n = 12
 # m = 6
 # p = 3
 # model = UnicycleGame(p=p)
-# Q = [Diagonal(rand(SVector{model.ni[i],T})) for i=1:p]
-# R = [Diagonal(rand(SVector{model.mi[i],T})) for i=1:p]
-# xf = [i*ones(SVector{model.ni[i],T}) for i=1:p]
-# uf = [2i*ones(SVector{model.mi[i],T}) for i=1:p]
 #
-# game_obj = GameObjective(Q,R,xf,uf,N,model)
+# ConstraintList(n,m,N)
+# ConstraintList <: TrajectoryOptimization.AbstractConstraintSet
 #
-# X = [1.0*SVector{model.n,T}([1,2,3,1,2,3,1,2,3,1,2,3]) for k=1:N]
-# U = [1.0*SVector{model.m,T}([2,4,6,2,4,6]) for k=1:N-1]
-# dt = 0.1
-# Dt = dt*ones(N-1)
-# traj = Traj(X, U,Dt)
 #
-# @test cost(game_obj.obj[1], traj) == 0.0
-# @test cost(game_obj.obj[2], traj) == 0.0
-# @test cost(game_obj.obj[3], traj) == 0.0

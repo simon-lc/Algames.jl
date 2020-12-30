@@ -8,7 +8,8 @@
     @test probsize_uni == probsize_dbl
 
     # Test Options
-
+    opts = Options()
+    @test typeof(opts) <: Options
 
     # Test GameObjective
     v = [1,2,3]
@@ -37,10 +38,18 @@
     Dt = dt*ones(N-1)
     traj = Traj(X, U,Dt)
 
-    @test cost(game_obj.obj[1], traj) == 0.0
-    @test cost(game_obj.obj[2], traj) == 0.0
-    @test cost(game_obj.obj[3], traj) == 0.0
+    @test abs(cost(game_obj.obj[1], traj)) <= 1e-10
+    @test abs(cost(game_obj.obj[2], traj)) <= 1e-10
+    @test abs(cost(game_obj.obj[3], traj)) <= 1e-10
+
+    # Test GameConstraintList
+    N = 10
+    n = 12
+    m = 6
+    p = 3
+    conlists = [ConstraintList(n,m,N) for i=1:p]
+    game_conlist = GameConstraintList(conlists)
+    @test game_conlist.p = p
+    @test game_conlist.conlist == conlists
 
 end
-
-using Test

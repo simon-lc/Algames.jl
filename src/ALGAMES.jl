@@ -25,7 +25,8 @@ export
 export
     ProblemSize,
     Options,
-    GameObjective
+    GameObjective,
+    GameConstraintList
 
 include("newcode.jl")
 # Dynamics
