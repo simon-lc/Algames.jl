@@ -49,7 +49,7 @@
     p = 3
     conlists = [ConstraintList(n,m,N) for i=1:p]
     game_conlist = GameConstraintList(conlists)
-    @test game_conlist.p = p
+    @test game_conlist.p == p
     @test game_conlist.conlist == conlists
 
 end
