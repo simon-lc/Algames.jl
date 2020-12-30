@@ -17,11 +17,11 @@
     mi = probsize.mi
 
     verti_inds = vertical_indices(probsize)
-    @test verti_inds[:opt1][:x][1] == SVector{n,Int}(1:n)
+    @test verti_inds[:opt1][:x][2] == SVector{n,Int}(1:n)
     @test verti_inds[:opt1][:u][1] == SVector{mi[1],Int}(n .+ (1:mi[1]))
-    @test verti_inds[:opt1][:x][2] == SVector{n,Int}(n + mi[1] .+ (1:n))
+    @test verti_inds[:opt1][:x][3] == SVector{n,Int}(n + mi[1] .+ (1:n))
     @test verti_inds[:opt1][:u][2] == SVector{mi[1],Int}(2n + mi[1] .+ (1:mi[1]))
-    @test verti_inds[:opt2][:x][1] == SVector{n,Int}(2n+2mi[1] .+ (1:n))
+    @test verti_inds[:opt2][:x][2] == SVector{n,Int}(2n+2mi[1] .+ (1:n))
 
     function test_vertical_indices(probsize::ProblemSize, verti_inds)
         N = probsize.N
@@ -33,7 +33,7 @@
         all_inds = Vector{Int}([])
         for i = 1:p
             for k = 1:N-1
-                push!(all_inds, verti_inds[Symbol("opt$i")][:x][k]...)
+                push!(all_inds, verti_inds[Symbol("opt$i")][:x][k+1]...)
                 push!(all_inds, verti_inds[Symbol("opt$i")][:u][k]...)
             end
         end
@@ -59,12 +59,12 @@
     mi = probsize.mi
 
     horiz_inds = horizontal_indices(probsize)
-    @test horiz_inds[:x][1] == SVector{n,Int}(1:n)
+    @test horiz_inds[:x][2] == SVector{n,Int}(1:n)
     @test horiz_inds[:u1][1] == SVector{mi[1],Int}(n .+ (1:mi[1]))
     @test horiz_inds[:u2][1] == SVector{mi[2],Int}(n + mi[1] .+ (1:mi[2]))
     @test horiz_inds[:λ1][1] == SVector{n,Int}(n + m .+ (1:n))
     @test horiz_inds[:λ2][1] == SVector{n,Int}(2n + m .+ (1:n))
-    @test horiz_inds[:x][2] == SVector{n,Int}(3n + m .+ (1:n))
+    @test horiz_inds[:x][3] == SVector{n,Int}(3n + m .+ (1:n))
 
     function test_horizontal_indices(probsize::ProblemSize, horiz_inds)
         N = probsize.N
@@ -75,7 +75,7 @@
         ni = probsize.ni
         all_inds = Vector{Int}([])
         for k = 1:N-1
-            push!(all_inds, horiz_inds[:x][k]...)
+            push!(all_inds, horiz_inds[:x][k+1]...)
             for i = 1:p
                 push!(all_inds, horiz_inds[Symbol("u$i")][k]...)
                 push!(all_inds, horiz_inds[Symbol("λ$i")][k]...)
@@ -89,4 +89,11 @@
     end
     @test test_horizontal_indices(probsize, horiz_inds)
 
+    # Test Newton Core
+    N = 3
+    p = 2
+    model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
+    core = NewtonCore(probsize)
+    @test typeof(core) <: NewtonCore
 end
