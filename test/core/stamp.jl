@@ -43,9 +43,9 @@
     @test !(stamp1 == stamp3)
 
     # Test Stampify
-    stamp0 = stampify(Stamp(:opt1, :x_1, 6, :λ1, 3))
-    stamp1 = stampify(Stamp(:opt1, :x, 5, :λ1, 3))
-    stamp2 = stampify(Stamp(:opt1, :x1, 4, :λ1, 3))
+    stamp0 = stampify(:opt1, :x_1, 6, :λ1, 3)
+    stamp1 = stampify(:opt1, :x, 5, :λ1, 3)
+    stamp2 = stampify(:opt1, :x1, 4, :λ1, 3)
     @test stamp0 == stamp1
     @test stamp1 == stamp2
 
