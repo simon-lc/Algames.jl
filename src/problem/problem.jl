@@ -1,41 +1,3 @@
-################################################################################
-# ProblemSize
-################################################################################
-
-mutable struct ProblemSize{SVu,SVx,SVz}
-    N::Int
-    n::Int
-    m::Int
-    p::Int
-    ni::Vector{Int}
-    mi::Vector{Int}
-    pu::SVu
-    px::SVx
-    pz::SVz
-end
-
-function ProblemSize(N::Int, model::AbstractGameModel)
-    return ProblemSize(
-        N,
-        model.n,
-        model.m,
-        model.p,
-        model.ni,
-        model.mi,
-        model.pu,
-        model.px,
-        model.pz,
-        )
-end
-
-import Base.==
-function (==)(p1::ProblemSize, p2::ProblemSize)
-    out = true
-    for name in fieldnames(ProblemSize)
-        out &= getfield(p1, name) == getfield(p2, name)
-    end
-    return out
-end
 
 ################################################################################
 # GameOptions
@@ -161,33 +123,6 @@ function GameConstraintList(conlists::Vector{<:TrajectoryOptimization.AbstractCo
 	p = length(conlists)
 	return GameConstraintList(p, conlists)
 end
-
-################################################################################
-# NewtonCore
-################################################################################
-
-mutable struct NewtonCore{Vr,Vrt,SMj,SVhi,SVvi,SA}
-	res::Vr               # residual vector
-	res_tmp::Vrt          # holds a temporary copy of the residual vector
-	jac::SMj              # residual sparse jacobian
-	probsize::ProblemSize # size of the problem
-	horiz_inds::SVhi      # indices for each variable in an horizontal block
-	verti_inds::SVvi      # indices for each variable in an vertical block
-	sub::SA               # Jacobian views dictionary
-end
-
-# function NewtonCore(probsize::ProblemSize)
-# 	res =
-# 	res_tmp = deepcopy(res)
-# 	jac =
-#
-# 	return NewtonCore{TYPE...}(res, res_tmp, jac, probsize,
-# 		horiz_inds, verti_inds, sub)
-# end
-
-
-
-
 
 
 # mutable struct Residual15{

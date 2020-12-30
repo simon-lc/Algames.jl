@@ -12,5 +12,8 @@ include("VecPair.jl")
 include("dynamics/double_integrator.jl")
 include("dynamics/unicycle.jl")
 
+# Core
+include("core/newton_core.jl")
+
 # Problem
 include("problem/problem.jl")

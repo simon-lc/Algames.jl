@@ -21,9 +21,15 @@ export
     UnicycleGame,
     dynamics
 
-# Problem
+# Core
 export
     ProblemSize,
+    NewtonCore,
+    vertical_indices,
+    horizontal_indices
+
+# Problem
+export
     Options,
     GameObjective,
     GameConstraintList
@@ -33,6 +39,9 @@ include("newcode.jl")
 include("dynamics/game_model.jl")
 include("dynamics/double_integrator.jl")
 include("dynamics/unicycle.jl")
+
+# Core
+include("core/newton_core.jl")
 
 # Problem
 include("problem/problem.jl")
