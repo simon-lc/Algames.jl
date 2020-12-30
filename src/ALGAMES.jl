@@ -26,7 +26,12 @@ export
     ProblemSize,
     NewtonCore,
     vertical_indices,
-    horizontal_indices
+    horizontal_indices,
+    VStamp,
+    Stamp,
+    stampify,
+    stampify!,
+    valid
 
 # Problem
 export
@@ -42,6 +47,7 @@ include("dynamics/unicycle.jl")
 
 # Core
 include("core/newton_core.jl")
+include("core/stamp.jl")
 
 # Problem
 include("problem/problem.jl")

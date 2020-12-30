@@ -45,7 +45,7 @@ mutable struct NewtonCore{Vr,Vrt,SMj,SVhi,SVvi,SAr,SAj}
 	res::Vr               # residual vector
 	res_tmp::Vrt          # holds a temporary copy of the residual vector
 	jac::SMj              # residual sparse jacobian
-	# probsize::ProblemSize # size of the problem
+	probsize::ProblemSize # size of the problem
 	horiz_inds::SVhi      # indices for each variable in an horizontal block
 	verti_inds::SVvi      # indices for each variable in an vertical block
 	res_sub::SAr               # Residual views dictionary
@@ -53,14 +53,23 @@ mutable struct NewtonCore{Vr,Vrt,SMj,SVhi,SVvi,SAr,SAj}
 end
 
 function NewtonCore(probsize::ProblemSize)
-	res = zeros()
+	N = probsize.N
+	n = probsize.n
+	m = probsize.m
+	p = probsize.p
+	S = n*p*(N-1) + m*(N-1) + n*(N-1)
+	res = zeros(S)
 	res_tmp = deepcopy(res)
-	# jac =
+	jac = spzeros(S,S)
 	verti_inds = vertical_indices(probsize)
 	horiz_inds = horizintal_indices(probsize)
 	return NewtonCore{TYPE...}(res, res_tmp, jac, probsize,
-		horiz_inds, verti_inds, sub)
+		horiz_inds, verti_inds, res_sub, jac_sub)
 end
+
+################################################################################
+# Indices
+################################################################################
 
 function vertical_indices(probsize::ProblemSize)
 	N = probsize.N
@@ -118,3 +127,8 @@ function horizontal_indices(probsize::ProblemSize)
 	end
 	return horiz_inds
 end
+
+
+################################################################################
+# SubArrays
+################################################################################

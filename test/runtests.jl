@@ -14,6 +14,7 @@ include("dynamics/unicycle.jl")
 
 # Core
 include("core/newton_core.jl")
+include("core/stamp.jl")
 
 # Problem
 include("problem/problem.jl")
