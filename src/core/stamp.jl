@@ -55,7 +55,7 @@ end
 
 function (==)(stamp1::VStamp, stamp2::VStamp)
     out = true
-	for name in Stamp.name.names
+	for name in VStamp.name.names
         out &= getfield(stamp1, name) == getfield(stamp2, name)
     end
     return out
@@ -179,11 +179,3 @@ function valid(prob::Symbol, n1::Symbol, v1::Int, N::Int, p::Int)
 	end
 	return b1
 end
-
-
-
-
-# stamp = Stamp(:opt, :u, 1, :q_1, 2)
-# stamp = stampify(:opt, :q_1, 3, :u, 1)
-# valid(stamp, opts_, N)
-# opts_.mode = :shared
