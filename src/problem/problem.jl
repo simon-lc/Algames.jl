@@ -149,7 +149,7 @@ function expand_vector(v::AbstractVector{T}, inds::AbstractVector{Int}, n::Int) 
 end
 
 ################################################################################
-# GameConstraintSet
+# GameConstraintList
 ################################################################################
 
 mutable struct GameConstraintList
@@ -419,7 +419,7 @@ mutable struct GameProblem12{SVx}
 end
 
 function GameProblem12(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Options,
-	cost::GameObjective, con::GameConstraintSet
+	cost::GameObjective, con::GameConstraintList
 	) where {T,SVx}
 
 	probsize = ProblemSize(N,model)
