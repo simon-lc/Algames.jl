@@ -50,7 +50,9 @@ export
     Options,
     GameObjective,
     GameConstraintList,
-    GameProblem
+    GameProblem,
+    residual!,
+    jacobian!
 
 include("newcode.jl")
 
@@ -71,6 +73,6 @@ include("core/newton_core.jl")
 include("problem/problem.jl")
 include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
-include("problem/solver.jl")
+include("problem/solver_methods.jl")
 
 end # module

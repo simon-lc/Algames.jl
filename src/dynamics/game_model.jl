@@ -1,4 +1,4 @@
-abstract type AbstractGameModel
+abstract type AbstractGameModel <: AbstractModel
 end
 
 function Base.size(model::AbstractGameModel)

@@ -23,7 +23,7 @@ function UnicycleGame(;p::Int=2)
 	return UnicycleGame{n,m,p,TYPE...}(n,m,p,ni,mi,pu,px,pz)
 end
 
-@generated function dynamics(model::UnicycleGame{N,M,P}, x, u) where {N,M,P}
+@generated function RobotDynamics.dynamics(model::UnicycleGame{N,M,P}, x, u) where {N,M,P}
 	xd  = [:(cos(x[$i])*x[$i+P]) for i=M+1:M+P]
 	yd  = [:(sin(x[$i])*x[$i+P]) for i=M+1:M+P]
 	qdd = [:(u[$i]) for i=1:M]

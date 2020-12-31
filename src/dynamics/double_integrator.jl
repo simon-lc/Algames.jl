@@ -24,7 +24,7 @@ function DoubleIntegratorGame(;p::Int=2, d::Int=2)
 	return DoubleIntegratorGame{n,m,p,TYPE...}(n,m,p,ni,mi,pu,px,pz)
 end
 
-@generated function dynamics(model::DoubleIntegratorGame{N,M,P}, x, u) where {N,M,P}
+@generated function RobotDynamics.dynamics(model::DoubleIntegratorGame{N,M,P}, x, u) where {N,M,P}
 	qd  = [:(x[$i]) for i=M+1:N]
 	qdd = [:(u[$i]) for i=1:M]
 	return :(SVector{$N}($(qd...), $(qdd...)))
