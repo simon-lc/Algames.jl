@@ -127,13 +127,14 @@ end
 # GameProblem
 ################################################################################
 
-mutable struct GameProblem{SVx}
+mutable struct GameProblem{KN,n,m,T,SVd,SVx}
     probsize::ProblemSize
+	model::AbstractGameModel
     core::NewtonCore
 	x0::SVx
     game_obj::GameObjective
     game_conlist::GameConstraintList
-    traj::Traj
+    pdtraj::PrimalDualTraj{KN,n,m,T,SVd}
     opts::Options
 	stats::Statistics
 end
@@ -143,9 +144,9 @@ function GameProblem(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Opt
 	) where {T,SVx}
 
 	probsize = ProblemSize(N,model)
-	traj = Traj(model.n,model.m,dt,N)
+	pdtraj = PrimalDualTraj(probsize, dt)
 	core = NewtonCore(probsize)
 	stats = Statistics()
-	TYPE = typeof.((x0,))
-	return GameProblem{TYPE...}(probsize, core, x0, game_obj, game_conlist, traj, opts, stats)
+	TYPE = (eltype(pdtraj.pr), model.n, model.m, T, eltype(pdtraj.du), typeof(x0))
+	return GameProblem{TYPE...}(probsize, model, core, x0, game_obj, game_conlist, pdtraj, opts, stats)
 end

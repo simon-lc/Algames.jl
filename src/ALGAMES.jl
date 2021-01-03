@@ -3,6 +3,7 @@ module ALGAMES
 greet() = print("Hello World!")
 
 using BenchmarkTools
+using ForwardDiff
 using LinearAlgebra
 using Parameters
 using SparseArrays
@@ -25,6 +26,7 @@ export
 # Struct
 export
     ProblemSize,
+    PrimalDualTraj,
     Statistics,
     record!,
     reset!
@@ -39,6 +41,7 @@ export
     vertical_idx,
     residual_views,
     jacobian_views,
+    dynamics_indices,
     VStamp,
     Stamp,
     stampify,
@@ -52,7 +55,11 @@ export
     GameConstraintList,
     GameProblem,
     residual!,
-    jacobian!
+    residual_jacobian!,
+    add2sub,
+    addI2sub,
+    dynamics_residual,
+    ∇dynamics!
 
 include("newcode.jl")
 
@@ -63,6 +70,7 @@ include("dynamics/unicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")
+include("struct/primal_dual_traj.jl")
 include("struct/statistics.jl")
 
 # Core

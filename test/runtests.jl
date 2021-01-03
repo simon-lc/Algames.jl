@@ -1,9 +1,11 @@
 using Test
 using ALGAMES
 using BenchmarkTools
+using ForwardDiff
 using LinearAlgebra
 using SparseArrays
 using StaticArrays
+using RobotDynamics
 using TrajectoryOptimization
 
 include("vec_addsub.jl")
@@ -15,6 +17,7 @@ include("dynamics/unicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")
+include("struct/primal_dual_traj.jl")
 include("struct/statistics.jl")
 
 # Core
