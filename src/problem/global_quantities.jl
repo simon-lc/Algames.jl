@@ -4,20 +4,33 @@
 
 function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
 	N = prob.probsize.N
-    p = prob.probsize.p
+	p = prob.probsize.p
+    pu = prob.probsize.pu
 	core = prob.core
 	model = prob.model
+	game_obj = prob.game_obj
 	pdtraj = prob.pdtraj
     stamp = VStamp()
 
+	# Cost
+	cost_gradient!(game_obj, prob.pdtraj)
+	for i = 1:p
+		# State cost
+		for k = 1:N
+			stampify!(stamp, :opt, i, :x, 1, k)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i].cost[k].q) : nothing
+		end
+		# Control Cost
+		for k = 1:N-1
+			stampify!(stamp, :opt, i, :u, i, k)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i].cost[k].r[pu[i]]) : nothing
+		end
+	end
+
+	# Dynamics
     for k = 1:N-1
-        # Local Lagrangians
-        for i = 1:p
-            # xx
-        end
-        # Dynamics
         stampify!(stamp, :dyn, 1, :x, 1, k)
-        add2sub(core.res_sub[stamp], dynamics_residual(model, pdtraj, k)) # shouldn't allocate
+        valid(stamp, N, p) ? add2sub(core.res_sub[stamp], dynamics_residual(model, pdtraj, k)) : nothing # shouldn't allocate
     end
     return nothing
 end
@@ -28,20 +41,34 @@ end
 
 function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
     N = prob.probsize.N
-    p = prob.probsize.p
+	p = prob.probsize.p
+    pu = prob.probsize.pu
 	model = prob.model
-    core = prob.core
+	core = prob.core
+    game_obj = prob.game_obj
 
     # Allocations
     stamp = Stamp()
     ∇dyn = zeros(MMatrix{n,(n+m),T,n*(n+m)})
 
+	# Cost function
+	cost_hessian!(game_obj, prob.pdtraj)
+	# Cost
+	for i = 1:p
+		# State cost
+		for k = 1:N
+			stampify!(stamp, :opt, i, :x, 1, k, :x, 1, k)
+			valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i].cost[k].Q) : nothing
+		end
+		# Control cost
+		for k = 1:N-1
+			stampify!(stamp, :opt, i, :u, i, k, :u, i, k)
+			valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i].cost[k].R[pu[i],pu[i]]) : nothing
+		end
+	end
+
+	# Dynamics
     for k = 1:N-1
-        # Lagrangians
-        for i = 1:p
-            # xx
-        end
-        # Dynamics
         ∇dynamics!(∇dyn, model, prob.pdtraj, k)
         # Bottom Left
         stampify!(stamp, :dyn, 1, :x, 1, k, :x, 1, k)

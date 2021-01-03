@@ -52,6 +52,8 @@ export
 export
     Options,
     GameObjective,
+    cost_gradient!,
+    cost_hessian!,
     GameConstraintList,
     GameProblem,
     residual!,
