@@ -26,11 +26,10 @@ end
 # Residual Jacobian
 ################################################################################
 
-function residual_jacobian!(prob::GameProblem)
+function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
     N = prob.probsize.N
-    n = prob.probsize.n
-	m = prob.probsize.m
     p = prob.probsize.p
+	model = prob.model
     core = prob.core
 
     # Allocations
