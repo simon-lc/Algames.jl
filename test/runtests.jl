@@ -3,8 +3,11 @@ using ALGAMES
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
+using Parameters
+using Printf
 using SparseArrays
 using StaticArrays
+using Random
 using RobotDynamics
 using TrajectoryOptimization
 

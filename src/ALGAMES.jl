@@ -6,8 +6,10 @@ using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
 using Parameters
+using Printf
 using SparseArrays
 using StaticArrays
+using Random
 using RobotDynamics
 using TrajectoryOptimization
 
@@ -53,6 +55,9 @@ export
 
 # Problem
 export
+    Regularizer,
+    set!,
+    mult!,
     Options,
     GameObjective,
     cost_gradient!,
@@ -63,6 +68,7 @@ export
     residual_jacobian!,
     add2sub,
     addI2sub,
+    sparse_zero!,
     dynamics_residual,
     ∇dynamics!
 

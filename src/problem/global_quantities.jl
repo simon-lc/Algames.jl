@@ -13,11 +13,14 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
 	core = prob.core
 	model = prob.model
 	game_obj = prob.game_obj
-	pdtraj = prob.pdtraj
+
+	# Initialization
+	prob.core.res .= 0.0
     stamp = VStamp()
+	∇dyn = zeros(MMatrix{n,(n+m),T,n*(n+m)})
 
 	# Cost
-	cost_gradient!(game_obj, prob.pdtraj)
+	cost_gradient!(game_obj, pdtraj)
 	for i = 1:p
 		# State cost
 		for k = 1:N
@@ -30,6 +33,19 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
 			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i].cost[k].r[pu[i]]) : nothing
 		end
 	end
+	# Dynamics penalty
+	for k = 1:N-1
+		∇dynamics!(∇dyn, model, pdtraj, k)
+		for i = 1:p
+			λik = pdtraj.du[i][k]
+			stampify!(stamp, :opt, i, :x, 1, k)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], ∇dyn[:,core.dyn[:x][1]]'*λik) : nothing
+			stampify!(stamp, :opt, i, :u, i, k)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], ∇dyn[:,core.dyn[:u][i]]'*λik) : nothing
+			stampify!(stamp, :opt, i, :x, 1, k+1)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], -λik) : nothing
+		end
+	end
 
 	# Dynamics
     for k = 1:N-1
@@ -38,6 +54,7 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
     end
     return nothing
 end
+
 
 ################################################################################
 # Residual Jacobian
@@ -57,12 +74,15 @@ function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
 	core = prob.core
     game_obj = prob.game_obj
 
+	# Reset!
+	sparse_zero!(prob.core.jac)
+
     # Allocations
     stamp = Stamp()
     ∇dyn = zeros(MMatrix{n,(n+m),T,n*(n+m)})
 
 	# Cost function
-	cost_hessian!(game_obj, prob.pdtraj)
+	cost_hessian!(game_obj, pdtraj)
 	# Cost
 	for i = 1:p
 		# State cost
@@ -78,8 +98,8 @@ function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
 	end
 
 	# Dynamics
-    for k = 1:N-1
-        ∇dynamics!(∇dyn, model, prob.pdtraj, k)
+	for k = 1:N-1
+        ∇dynamics!(∇dyn, model, pdtraj, k)
         # Bottom Left
         stampify!(stamp, :dyn, 1, :x, 1, k, :x, 1, k)
 		∇dyn_x = ∇dyn[:,core.dyn[:x][1]]
@@ -102,6 +122,26 @@ function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
     end
     return nothing
 end
+
+function regularize_residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
+	N = prob.probsize.N
+	p = prob.probsize.p
+	pu = prob.probsize.pu
+	core = prob.core
+	opts = prob.opts
+
+	stamp = Stamp()
+	for k = 1:N-1
+		for i = 1:p
+			stampify!(stamp, :opt, i, :x, 1, k+1, :x, 1, k+1)
+			valid(stamp, N, p) ? addI2sub(core.jac_sub[stamp], opts.reg.x) : nothing
+			stampify!(stamp, :opt, i, :u, i, k, :u, i, k)
+			valid(stamp, N, p) ? addI2sub(core.jac_sub[stamp], opts.reg.u) : nothing
+		end
+	end
+	return nothing
+end
+
 ################################################################################
 # Helpers
 ################################################################################
@@ -126,22 +166,38 @@ function addI2sub(v::SubArray, e)
 	return nothing
 end
 
+function sparse_zero!(spm::SparseMatrixCSC)
+	n = length(spm.nzval)
+	for i = 1:n
+		spm.nzval[i] = 0.0
+	end
+	return nothing
+end
 
+################################################################################
+# Printers
+################################################################################
 
+function display_solver_header()
+	@printf(
+		"%-3s %-2s %-2s %-6s %-6s \n",
+		"out",
+		"in",
+		"α",
+		"res",
+		"reg",
+		)
+	return nothing
+end
 
-#
-#
-# T = Float64
-# model = UnicycleGame(p=3)
-# x = rand(SVector{model.n,T})
-# u = rand(SVector{model.m,T})
-# dt = 0.2
-# k = KnotPoint(x,u,dt)
-# @ballocated discrete_dynamics(RK2, $model, $k)
-# @btime discrete_dynamics($RK4, $model, $k)
-#
-# v = view(∇f, (1:12), (1:18))
-# @ballocated RobotDynamics.jacobian!($∇f,$model,$k)
-# @btime RobotDynamics.jacobian!($∇f,$model,$k)
-# @ballocated RobotDynamics.jacobian!($v,$model,$k)
-# @btime RobotDynamics.jacobian!($v,$model,$k)
+function display_solver_data(k, l, j, res_norm, reg)#, condi, loss, val_scale, jac_scale)
+	@printf(
+		"%-3s %-2s %-2s %-6s %-6s \n",
+		k,
+		l,
+		j,
+		@sprintf("%.0e", res_norm),
+		@sprintf("%.0e", reg.x),
+		)
+	return nothing
+end
