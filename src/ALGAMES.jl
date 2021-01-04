@@ -27,6 +27,9 @@ export
 export
     ProblemSize,
     PrimalDualTraj,
+    init_traj!,
+    update_traj!,
+    set_traj!,
     Statistics,
     record!,
     reset!
@@ -72,12 +75,14 @@ include("dynamics/unicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")
-include("struct/primal_dual_traj.jl")
 include("struct/statistics.jl")
 
 # Core
 include("core/stamp.jl")
 include("core/newton_core.jl")
+
+# Struct
+include("struct/primal_dual_traj.jl")
 
 # Problem
 include("problem/problem.jl")

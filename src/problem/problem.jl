@@ -153,7 +153,9 @@ mutable struct GameProblem{KN,n,m,T,SVd,SVx}
 	x0::SVx
     game_obj::GameObjective
     game_conlist::GameConstraintList
-    pdtraj::PrimalDualTraj{KN,n,m,T,SVd}
+	pdtraj::PrimalDualTraj{KN,n,m,T,SVd}
+	pdtraj_trial::PrimalDualTraj{KN,n,m,T,SVd}
+    Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd}
     opts::Options
 	stats::Statistics
 end
@@ -164,8 +166,10 @@ function GameProblem(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Opt
 
 	probsize = ProblemSize(N,model)
 	pdtraj = PrimalDualTraj(probsize, dt)
+	pdtraj_trial = PrimalDualTraj(probsize, dt)
+	Δpdtraj = PrimalDualTraj(probsize, dt)
 	core = NewtonCore(probsize)
 	stats = Statistics()
 	TYPE = (eltype(pdtraj.pr), model.n, model.m, T, eltype(pdtraj.du), typeof(x0))
-	return GameProblem{TYPE...}(probsize, model, core, x0, game_obj, game_conlist, pdtraj, opts, stats)
+	return GameProblem{TYPE...}(probsize, model, core, x0, game_obj, game_conlist, pdtraj, pdtraj_trial, Δpdtraj, opts, stats)
 end

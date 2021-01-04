@@ -1,8 +1,12 @@
 ################################################################################
 # Residual
 ################################################################################
-
 function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
+	residual!(prob, prob.pdtraj)
+	return nothing
+end
+
+function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{KN,n,m,T,SVd}) where {KN,n,m,T,SVd,SVx}
 	N = prob.probsize.N
 	p = prob.probsize.p
     pu = prob.probsize.pu
@@ -40,6 +44,12 @@ end
 ################################################################################
 
 function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}
+	residual_jacobian!(prob, prob.pdtraj)
+	return nothing
+end
+
+function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
+	pdtraj::PrimalDualTraj{KN,n,m,T,SVd}) where {KN,n,m,T,SVd,SVx}
     N = prob.probsize.N
 	p = prob.probsize.p
     pu = prob.probsize.pu
