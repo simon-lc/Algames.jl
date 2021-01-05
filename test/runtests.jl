@@ -21,8 +21,8 @@ include("dynamics/unicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")
-include("struct/primal_dual_traj.jl")
 include("struct/statistics.jl")
+include("struct/primal_dual_traj.jl")
 include("struct/violations.jl")
 
 # Core
@@ -34,6 +34,11 @@ include("problem/problem.jl")
 include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
+
+# Constraints
+include("constraints/control_bound_constraint.jl")
+include("constraints/wall_constraint.jl")
+include("constraints/constraints_methods.jl")
 
 # Plots
 include("plots/solver_plots.jl")

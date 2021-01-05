@@ -38,6 +38,17 @@ export
     reset!,
     dynamics_violation
 
+# Constraints
+export
+    ControlBoundConstraint,
+    WallConstraint,
+    evaluate,
+    add_collision_avoidance!,
+    add_control_bound!,
+    add_circle_constraint!,
+    Wall,
+    add_wall_constraint!
+
 # Core
 export
     NewtonCore,
@@ -105,6 +116,11 @@ include("problem/problem.jl")
 include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
+
+# Constraints
+include("constraints/control_bound_constraint.jl")
+include("constraints/wall_constraint.jl")
+include("constraints/constraints_methods.jl")
 
 # Plots
 include("plots/solver_plots.jl")
