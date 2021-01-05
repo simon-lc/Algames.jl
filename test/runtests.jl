@@ -4,11 +4,12 @@ using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
 using Parameters
+using Plots
 using Printf
-using SparseArrays
-using StaticArrays
 using Random
 using RobotDynamics
+using SparseArrays
+using StaticArrays
 using TrajectoryOptimization
 
 include("vec_addsub.jl")
@@ -22,6 +23,7 @@ include("dynamics/unicycle.jl")
 include("struct/problem_size.jl")
 include("struct/primal_dual_traj.jl")
 include("struct/statistics.jl")
+include("struct/violations.jl")
 
 # Core
 include("core/stamp.jl")
@@ -32,3 +34,6 @@ include("problem/problem.jl")
 include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
+
+# Plots
+include("plots/solver_plots.jl")

@@ -7,15 +7,14 @@ function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vi
 	core = prob.core
 	game_conlist = prob.game_conlist
 	opts = prob.opts
-	pdtraj = prob.pdtraj
-	pdtraj_trial = prob.pdtraj_trial
-	Δpdtraj = prob.Δpdtraj
 
 	# Set initial trajectory
 	Random.seed!(100)
-	init_traj!(pdtraj; x0=prob.x0, f=rand, amplitude=1e-8)
-	init_traj!(pdtraj_trial; x0=prob.x0, f=rand, amplitude=1e-8)
-	init_traj!(Δpdtraj; x0=prob.x0, f=zeros, amplitude=0.0)
+	# init_traj!(prob.pdtraj; x0=prob.x0, f=rand, amplitude=1e-8)
+	init_traj!(prob.pdtraj; x0=prob.x0, f=zeros, amplitude=1e-8)
+	# init_traj!(prob.pdtraj_trial; x0=prob.x0, f=rand, amplitude=1e-8)
+	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=zeros, amplitude=1e-8)
+	init_traj!(prob.Δpdtraj; x0=prob.x0, f=zeros, amplitude=0.0)
 
 	# Set the initial penalties
 	#XXX pdtraj.ρ = SVector{1,T}([opts.ρ_0])
@@ -62,12 +61,9 @@ end
 function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 	core = prob.core
 	opts = prob.opts
-	pdtraj = prob.pdtraj
-	pdtraj_trial = prob.pdtraj_trial
-	Δpdtraj = prob.Δpdtraj
 
 	# Residual
-	residual!(prob)
+	residual!(prob, prob.pdtraj)
 	#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj, pdtraj) : nothing # should do nothing since we regularize around pdtraj
 	# loss = [L_opt(cost,con_traj,model,opts,pdtraj),
 	# 		L_mdp(model,opts,pdtraj),
@@ -85,10 +81,11 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 
 	# Line Search
 	α, j = line_search(prob, res_norm)
-	update_traj!(pdtraj, pdtraj, α, prob.Δpdtraj)
+	update_traj!(prob.pdtraj, prob.pdtraj, α, prob.Δpdtraj)
 
 	failed_ls = j == opts.ls_iter
-	LS_count += Int(failed_ls)
+	# LS_count += Int(failed_ls)
+	failed_ls ? LS_count += 1 : LS_count = 0
 	# condi = 0.0
 	# condi = cond(Array(core.jac))
 	opts.inner_print ? display_solver_data(k, l, j, res_norm, opts.reg) : nothing
@@ -99,19 +96,16 @@ end
 function line_search(prob::GameProblem, res_norm::T) where {T}
 	core = prob.core
 	opts = prob.opts
-	pdtraj = prob.pdtraj
-	pdtraj_trial = prob.pdtraj_trial
-	Δpdtraj = prob.Δpdtraj
 
 	j = 1
 	α = 1.0
-	@show res_norm
+	# @show res_norm
 	while j < opts.ls_iter
-		update_traj!(pdtraj_trial, pdtraj, α, Δpdtraj)
-		residual!(prob, pdtraj_trial)
+		update_traj!(prob.pdtraj_trial, prob.pdtraj, α, prob.Δpdtraj)
+		residual!(prob, prob.pdtraj_trial)
 		#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj_trial, pdtraj) : nothing# should add regularization term to prevent deviation from pdtraj
 		res_norm_trial = norm(core.res, 1)/length(core.res)
-		@show res_norm_trial
+		# @show res_norm_trial
 		if res_norm_trial <= (1.0-α*opts.β)*res_norm
 			LS_count = 0
 			break

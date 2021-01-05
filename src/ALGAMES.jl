@@ -6,11 +6,12 @@ using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
 using Parameters
+using Plots
 using Printf
-using SparseArrays
-using StaticArrays
 using Random
 using RobotDynamics
+using SparseArrays
+using StaticArrays
 using TrajectoryOptimization
 
 export
@@ -34,7 +35,8 @@ export
     set_traj!,
     Statistics,
     record!,
-    reset!
+    reset!,
+    dynamics_violation
 
 # Core
 export
@@ -70,7 +72,14 @@ export
     addI2sub,
     sparse_zero!,
     dynamics_residual,
-    ∇dynamics!
+    ∇dynamics!,
+    newton_solve!,
+    inner_iteration,
+    line_search
+
+# Plots
+export
+    plot_traj
 
 include("newcode.jl")
 
@@ -89,11 +98,15 @@ include("core/newton_core.jl")
 
 # Struct
 include("struct/primal_dual_traj.jl")
+include("struct/violations.jl")
 
 # Problem
 include("problem/problem.jl")
 include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
+
+# Plots
+include("plots/solver_plots.jl")
 
 end # module

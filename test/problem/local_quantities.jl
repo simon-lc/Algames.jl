@@ -40,7 +40,7 @@
 
     T = Float64
     dt = 0.2
-    model = DoubleIntegratorGame(p=3, d=2)
+    model = UnicycleGame(p=3)
     x = rand(SVector{model.n,T})
     u = rand(SVector{model.m,T})
     z = KnotPoint(x,u,dt)

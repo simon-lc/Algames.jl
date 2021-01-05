@@ -190,15 +190,13 @@ function dynamics_indices(probsize::ProblemSize)
 	n = probsize.n
 	p = probsize.p
 	mi = probsize.mi
+	pu = probsize.pu
 	dyn = Dict()
-	off = 0
 	dyn[:x] = Dict()
 	dyn[:u] = Dict()
-	dyn[:x][1] = SVector{n,Int}(off .+ (1:n))
-	off += n
+	dyn[:x][1] = SVector{n,Int}(1:n)
 	for i = 1:p
-		dyn[:u][i] = SVector{mi[i],Int}(off .+ (1:mi[i]))
-		off += mi[i]
+		dyn[:u][i] = SVector{mi[i],Int}(n .+ pu[i])
 	end
 	return dyn
 end

@@ -26,7 +26,7 @@ end
 # Methods
 ################################################################################
 
-function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=rand(SVector{n,T}),
+function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=1e-8*rand(SVector{n,T}),
     f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
     N = pdtraj.probsize.N
     p = pdtraj.probsize.p
@@ -47,14 +47,18 @@ function set_traj!(core::NewtonCore, Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd},
     Δtraj::AbstractVector) where {KN,n,m,T,SVd}
     N = core.probsize.N
     p = core.probsize.p
+    pu = core.probsize.pu
     # Primals
+    indu = zeros(Int,m)
     for k = 1:N-1
         # States
         ind = horizontal_idx(core, :x, 1, k+1)
         RobotDynamics.set_state!(Δpdtraj.pr[k+1], Δtraj[ind])
         # Controls
-        ind = vcat([horizontal_idx(core, :u, i, k) for i=1:p]...)
-        RobotDynamics.set_control!(Δpdtraj.pr[k], Δtraj[ind])
+        for i = 1:p
+            indu[pu[i]] = horizontal_idx(core, :u, i, k)
+        end
+        RobotDynamics.set_control!(Δpdtraj.pr[k], Δtraj[indu])
     end
     # Duals
     for i = 1:p
@@ -76,7 +80,7 @@ function update_traj!(target::PrimalDualTraj{KN,n,m,T,SVd},
         # States
         RobotDynamics.set_state!(target.pr[k+1], state(source.pr[k+1]) + α*state(Δ.pr[k+1]))
         # Controls
-        RobotDynamics.set_control!(target.pr[k], control(source.pr[k+1]) + α*control(Δ.pr[k]))
+        RobotDynamics.set_control!(target.pr[k], control(source.pr[k]) + α*control(Δ.pr[k]))
     end
     # Duals
     for i = 1:p
