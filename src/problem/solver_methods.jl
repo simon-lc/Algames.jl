@@ -5,7 +5,7 @@
 function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vis::Bool=false)
 	model = prob.model
 	core = prob.core
-	game_conlist = prob.game_conlist
+	game_con = prob.game_con
 	opts = prob.opts
 
 	# Set initial trajectory
@@ -22,7 +22,7 @@ function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vi
 
 	# Reset Statistics and constraints
 	reset!(prob.stats)
-	#XXX reset!(game_conlist)
+	#XXX reset!(game_con)
 	# Iterative solve
     for k = 1:opts.outer_iter
 		#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
@@ -47,7 +47,7 @@ function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vi
         k == opts.outer_iter ? break : nothing
 		# Dual Ascent
 		#XXX dual_ascent!(model, opts, pdtraj)
-		#XXX dual_ascent!(game_conlist, pdtraj)
+		#XXX dual_ascent!(game_con, pdtraj)
 		# Increasing Schedule
 		#XXX pdtraj.ρ = min.(pdtraj.ρ * opts.ρ_increase, opts.ρ_max)
     end

@@ -165,17 +165,27 @@ function cost_hessian!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
 end
 
 ################################################################################
-# GameConstraintList
+# GameConstraintValues
 ################################################################################
 
-mutable struct GameConstraintList
+mutable struct GameConstraintValues
 	p::Int
-	conlist::Vector{TrajectoryOptimization.AbstractConstraintSet}
+	state_conlist::Vector{TrajectoryOptimization.AbstractConstraintSet}
+	control_conlist::TrajectoryOptimization.AbstractConstraintSet
+	state_conval::Vector{Vector{TrajectoryOptimization.AbstractConstraintValues}}
+	control_conval::Vector{TrajectoryOptimization.AbstractConstraintValues}
 end
 
-function GameConstraintList(conlists::Vector{<:TrajectoryOptimization.AbstractConstraintSet})
-	p = length(conlists)
-	return GameConstraintList(p, conlists)
+function GameConstraintValues(probsize::ProblemSize)
+	N = probsize.N
+	n = probsize.n
+	m = probsize.m
+	p = probsize.p
+	state_conlist = [ConstraintList(n,m,N) for i=1:p]
+	control_conlist = ConstraintList(n,m,N)
+	state_conval = [Vector{TrajectoryOptimization.AbstractConstraintValues}() for i=1:p]
+	control_conval = Vector{TrajectoryOptimization.AbstractConstraintValues}()
+	return GameConstraintValues(p, state_conlist, control_conlist, state_conval, control_conval)
 end
 
 ################################################################################
@@ -188,7 +198,7 @@ mutable struct GameProblem{KN,n,m,T,SVd,SVx}
     core::NewtonCore
 	x0::SVx
     game_obj::GameObjective
-    game_conlist::GameConstraintList
+    game_con::GameConstraintValues
 	pdtraj::PrimalDualTraj{KN,n,m,T,SVd}
 	pdtraj_trial::PrimalDualTraj{KN,n,m,T,SVd}
     Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd}
@@ -197,7 +207,7 @@ mutable struct GameProblem{KN,n,m,T,SVd,SVx}
 end
 
 function GameProblem(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Options,
-	game_obj::GameObjective, game_conlist::GameConstraintList
+	game_obj::GameObjective, game_con::GameConstraintValues
 	) where {T,SVx}
 
 	probsize = ProblemSize(N,model)
@@ -207,5 +217,5 @@ function GameProblem(N::Int, dt::T, x0::SVx, model::AbstractGameModel, opts::Opt
 	core = NewtonCore(probsize)
 	stats = Statistics()
 	TYPE = (eltype(pdtraj.pr), model.n, model.m, T, eltype(pdtraj.du), typeof(x0))
-	return GameProblem{TYPE...}(probsize, model, core, x0, game_obj, game_conlist, pdtraj, pdtraj_trial, Δpdtraj, opts, stats)
+	return GameProblem{TYPE...}(probsize, model, core, x0, game_obj, game_con, pdtraj, pdtraj_trial, Δpdtraj, opts, stats)
 end

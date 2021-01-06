@@ -47,6 +47,9 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
 		end
 	end
 
+	# Constraints
+
+
 	# Dynamics
     for k = 1:N-1
         stampify!(stamp, :dyn, 1, :x, 1, k)

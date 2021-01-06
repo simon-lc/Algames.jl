@@ -68,15 +68,13 @@
     @test norm(game_obj.E[1].cost[end].R, 1) < 1e-10
 
 
-    # Test GameConstraintList
+    # Test GameConstraintValues
     N = 10
-    n = 12
-    m = 6
-    p = 3
-    conlists = [ConstraintList(n,m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    @test game_conlist.p == p
-    @test game_conlist.conlist == conlists
+    model = UnicycleGame(p=3)
+    probsize = ProblemSize(N,model)
+    game_con = GameConstraintValues(probsize)
+    @test game_con.p == model.p
+    @test length(game_con.state_conlist) == model.p
 
     # Test GameProblem
     T = Float64
@@ -84,6 +82,7 @@
     dt = 0.1
     p = 3
     model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
     x0 = rand(SVector{model.n,T})
     opts = Options()
 
@@ -93,9 +92,8 @@
     uf = [2i*ones(SVector{model.mi[i],T}) for i=1:p]
     game_obj = GameObjective(Q,R,xf,uf,N,model)
 
-    conlists = [ConstraintList(model.n,model.m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_conlist)
+    game_con = GameConstraintValues(probsize)
+    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
     @test typeof(prob) <: GameProblem
 
 end

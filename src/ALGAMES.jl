@@ -75,7 +75,7 @@ export
     GameObjective,
     cost_gradient!,
     cost_hessian!,
-    GameConstraintList,
+    GameConstraintValues,
     GameProblem,
     residual!,
     residual_jacobian!,

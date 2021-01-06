@@ -9,6 +9,7 @@
     dt = 0.1
     p = 1
     model = DoubleIntegratorGame(p=p)
+    probsize = ProblemSize(N,model)
     x0 = SVector{model.n,T}([1.0, 1.0, 0.0, 0.9])
     opts = Options()
     opts.inner_print = false
@@ -20,9 +21,8 @@
     uf = [-1*ones(SVector{model.mi[i],T}) for i=1:p]
     game_obj = GameObjective(Q,R,xf,uf,N,model)
 
-    conlists = [ConstraintList(model.n,model.m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_conlist)
+    game_con = GameConstraintValues(probsize)
+    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
 
     opts.outer_iter = 1
     opts.inner_iter = 1
@@ -38,6 +38,7 @@
     dt = 0.1
     p = 1
     model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
     x0 = SVector{model.n,T}([1.0, 1.0, 0.0, 0.9])
     opts = Options()
     opts.inner_print = false
@@ -49,9 +50,8 @@
     uf = [-1*ones(SVector{model.mi[i],T}) for i=1:p]
     game_obj = GameObjective(Q,R,xf,uf,N,model)
 
-    conlists = [ConstraintList(model.n,model.m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_conlist)
+    game_con = GameConstraintValues(probsize)
+    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
 
     opts.outer_iter = 7
     opts.inner_iter = 20
@@ -68,6 +68,7 @@
     dt = 0.1
     p = 2
     model = DoubleIntegratorGame(p=p)
+    probsize = ProblemSize(N,model)
     x0 = SVector{model.n,T}([1.0, 2.0, 1.0, 2.0, 0.0, 0.0, 0.9, 0.9])
     opts = Options()
     opts.inner_print = false
@@ -79,9 +80,8 @@
     uf = [-1*ones(SVector{model.mi[i],T}) for i=1:p]
     game_obj = GameObjective(Q,R,xf,uf,N,model)
 
-    conlists = [ConstraintList(model.n,model.m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_conlist)
+    game_con = GameConstraintValues(probsize)
+    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
 
     opts.outer_iter = 1
     opts.inner_iter = 1
@@ -98,6 +98,7 @@
     dt = 0.1
     p = 2
     model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
     x0 = SVector{model.n,T}([1.0, 2.0, 1.0, 2.0, 0.0, 0.0, 0.9, 0.9])
     opts = Options()
     opts.inner_print = false
@@ -109,9 +110,8 @@
     uf = [-1*ones(SVector{model.mi[i],T}) for i=1:p]
     game_obj = GameObjective(Q,R,xf,uf,N,model)
 
-    conlists = [ConstraintList(model.n,model.m,N) for i=1:p]
-    game_conlist = GameConstraintList(conlists)
-    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_conlist)
+    game_con = GameConstraintValues(probsize)
+    prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
 
     opts.outer_iter = 7
     opts.inner_iter = 20
