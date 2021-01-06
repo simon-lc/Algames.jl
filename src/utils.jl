@@ -1,7 +1,7 @@
 # Run tests locally
 using Pkg
-Pkg.activate("/home/simon/.julia/dev/ALGAMES")
-# Pkg.test("ALGAMES")
+Pkg.activate("/home/simon/.julia/dev/Algames")
+# Pkg.test("Algames")
 
 
-Pkg.activate("/home/simon/.julia/dev/ALGAMES/test")
+Pkg.activate("/home/simon/.julia/dev/Algames/test")

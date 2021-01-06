@@ -1,5 +1,5 @@
 using Test
-using ALGAMES
+using Algames
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra

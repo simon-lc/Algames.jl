@@ -55,7 +55,7 @@
 
     # Test greet
     f = open("out", create=true, read=true, write=true)
-    redirect_stdout(ALGAMES.greet, f)
+    redirect_stdout(Algames.greet, f)
     seekstart(f)
     @test readline(f) == "Hello World!"
     close(f)

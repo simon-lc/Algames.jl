@@ -1,4 +1,4 @@
-module ALGAMES
+module Algames
 
 greet() = print("Hello World!")
 

@@ -9,7 +9,7 @@
     inds = [1,3,5]
     n = 5
     V = [1,0,2,0,3]
-    @test V == ALGAMES.expand_vector(v,inds,n)
+    @test V == Algames.expand_vector(v,inds,n)
 
     # Test Game Objective
     T = Float64

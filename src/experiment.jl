@@ -1,10 +1,10 @@
-# using ALGAMES# using ALGAMES
+# using Algames# using Algames
 # using BenchmarkTools
 # using LinearAlgebra
 # using StaticArrays
 # using TrajectoryOptimization
 # const TO = TrajectoryOptimization
-# const AG = ALGAMES
+# const AG = Algames
 #
 # # Define the dynamics model of the game.
 # struct InertialUnicycleGame{T} <: AbstractGameModel
@@ -128,7 +128,7 @@
 # 	record_condition=false,
 #     inner_iterations=20,
 #     iterations_linesearch=10,
-#     log_level=ALGAMES.Logging.Debug)
+#     log_level=Algames.Logging.Debug)
 # algames_solver = DirectGamesSolver(algames_prob, algames_opts)
 #
 # ilqgames_opts = PenaltyiLQGamesSolverOptions{T}(
@@ -138,7 +138,7 @@
 #     # iterations_linesearch=5,
 #     line_search_lower_bound=0.0,
 #     line_search_upper_bound=0.02,
-#     log_level=ALGAMES.Logging.Warn)
+#     log_level=Algames.Logging.Warn)
 # ilqgames_solver = PenaltyiLQGamesSolver(ilqgames_prob, ilqgames_opts)
 # pen = ones(length(ilqgames_solver.constraints))*100.0
 # set_penalty!(ilqgames_solver, pen)
@@ -164,14 +164,14 @@
 # monte_carlo_sampling(algames_sampler)
 # monte_carlo_sampling(ilqgames_sampler)
 #
-# # ALGAMES
+# # Algames
 # # Time required to solve the problem
 # visualize_solve_time(algames_sampler; save=false)
 #
 # # Maximum constraint violation
 # visualize_cmax(algames_sampler; save=false)
 #
-# # Number of iterations (Newton step for ALGAMES, Riccati backwardpass for iLQGames)
+# # Number of iterations (Newton step for Algames, Riccati backwardpass for iLQGames)
 # visualize_iterations_total(algames_sampler; save=false)
 #
 # # Optimality constraint satisfaction
@@ -185,7 +185,7 @@
 # # Maximum constraint violation
 # visualize_cmax(ilqgames_sampler; save=false)
 #
-# # Number of iterations (Newton step for ALGAMES, Riccati backwardpass for iLQGames)
+# # Number of iterations (Newton step for Algames, Riccati backwardpass for iLQGames)
 # visualize_iterations_total(ilqgames_sampler; save=false)
 
 # using BenchmarkTools
@@ -193,7 +193,7 @@
 # using StaticArrays
 # using TrajectoryOptimization
 # const TO = TrajectoryOptimization
-# const AG = ALGAMES
+# const AG = Algames
 #
 # # Define the dynamics model of the game.
 # struct InertialUnicycleGame{T} <: AbstractGameModel
@@ -317,7 +317,7 @@
 # 	record_condition=false,
 #     inner_iterations=20,
 #     iterations_linesearch=10,
-#     log_level=ALGAMES.Logging.Debug)
+#     log_level=Algames.Logging.Debug)
 # algames_solver = DirectGamesSolver(algames_prob, algames_opts)
 #
 # ilqgames_opts = PenaltyiLQGamesSolverOptions{T}(
@@ -327,7 +327,7 @@
 #     # iterations_linesearch=5,
 #     line_search_lower_bound=0.0,
 #     line_search_upper_bound=0.02,
-#     log_level=ALGAMES.Logging.Warn)
+#     log_level=Algames.Logging.Warn)
 # ilqgames_solver = PenaltyiLQGamesSolver(ilqgames_prob, ilqgames_opts)
 # pen = ones(length(ilqgames_solver.constraints))*100.0
 # set_penalty!(ilqgames_solver, pen)
@@ -353,14 +353,14 @@
 # monte_carlo_sampling(algames_sampler)
 # monte_carlo_sampling(ilqgames_sampler)
 #
-# # ALGAMES
+# # Algames
 # # Time required to solve the problem
 # visualize_solve_time(algames_sampler; save=false)
 #
 # # Maximum constraint violation
 # visualize_cmax(algames_sampler; save=false)
 #
-# # Number of iterations (Newton step for ALGAMES, Riccati backwardpass for iLQGames)
+# # Number of iterations (Newton step for Algames, Riccati backwardpass for iLQGames)
 # visualize_iterations_total(algames_sampler; save=false)
 #
 # # Optimality constraint satisfaction
@@ -374,5 +374,5 @@
 # # Maximum constraint violation
 # visualize_cmax(ilqgames_sampler; save=false)
 #
-# # Number of iterations (Newton step for ALGAMES, Riccati backwardpass for iLQGames)
+# # Number of iterations (Newton step for Algames, Riccati backwardpass for iLQGames)
 # visualize_iterations_total(ilqgames_sampler; save=false)
