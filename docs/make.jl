@@ -1,8 +1,8 @@
 using Documenter
-using ALGAMES  # your package name here
+using Algames  # your package name here
 
 makedocs(
-    sitename = "ALGAMES",  # your package name here
+    sitename = "Algames",  # your package name here
     format = Documenter.HTML(prettyurls = false),  # optional
     pages = [
         "Introduction" => "index.md",
@@ -20,5 +20,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/simon-lc/ALGAMES.jl.git",
+    repo = "github.com/simon-lc/Algames.jl.git",
 )

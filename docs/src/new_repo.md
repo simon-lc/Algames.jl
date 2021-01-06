@@ -16,31 +16,31 @@ This is a summary of the instructions in the [Julia Pkg manual](https://julialan
 3. In your terminal on your computer, launch Julia. Generate the package files using the
     package manager:
 
-        ] generate ALGAMES
+        ] generate Algames
 
-    This will generate the `Project.toml` and a `src/ALGAMES.jl` files.
+    This will generate the `Project.toml` and a `src/Algames.jl` files.
 
 4. Create a `README.md`. Use whatever editor you prefer.
 
 5. Create a git repo, add the remote, and push changes. These instructions are also found
     in the previous image.
 
-        cd ALGAMES
+        cd Algames
         git init
         git add -A
         git commit -m "first commit"
-        git remote add origin https://github.com/bjack205/ALGAMES.jl.git
+        git remote add origin https://github.com/bjack205/Algames.jl.git
         git push -u origin master
 
 6. (optional) Delete local files and add to Julia `dev` folder
 
         cd ..
-        rm -rf ALGAMES
+        rm -rf Algames
 
     Run Julia from your terminal and dev the package:
 
-        ] dev https://github.com/bjack205/ALGAMES.jl.git
+        ] dev https://github.com/bjack205/Algames.jl.git
 
     Alternatively, you can link to your local repository if you didn't delete it:
 
-        ] dev /path/to/local/repo/ALGAMES
+        ] dev /path/to/local/repo/Algames
