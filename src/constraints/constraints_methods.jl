@@ -14,7 +14,7 @@ function add_collision_avoidance!(game_con::GameConstraintValues,
 			add_constraint!(game_con.state_conlist[i], CollisionConstraint(n,px[i],px[j],radius), 2:N)
 			con  = game_con.state_conlist[i].constraints[end]
 			inds = game_con.state_conlist[i].inds[end]
-			conval = TrajectoryOptimization.ConVal(n,m,con,inds)
+			conval = Altro.ALConVal(n,m,con,inds)
 			push!(game_con.state_conval[i], conval)
 		end
 	end
@@ -34,7 +34,7 @@ function add_control_bound!(game_con::GameConstraintValues, probsize::ProblemSiz
 	add_constraint!(game_con.control_conlist, ControlBoundConstraint(m,u_max=u_max,u_min=u_min), 1:N-1)
 	con  = game_con.control_conlist.constraints[end]
 	inds = game_con.control_conlist.inds[end]
-	conval = TrajectoryOptimization.ConVal(n,m,con,inds)
+	conval = Altro.ALConVal(n,m,con,inds)
 	push!(game_con.control_conval, conval)
 	return nothing
 end
@@ -58,7 +58,7 @@ function add_circle_constraint!(game_con::GameConstraintValues, probsize::Proble
 			2:N)
 		con  = game_con.state_conlist[i].constraints[end]
 		inds = game_con.state_conlist[i].inds[end]
-		conval = TrajectoryOptimization.ConVal(n,m,con,inds)
+		conval = Altro.ALConVal(n,m,con,inds)
 		push!(game_con.state_conval[i], conval)
 	end
 	return nothing
@@ -99,7 +99,7 @@ function add_wall_constraint!(game_con::GameConstraintValues, probsize::ProblemS
 			2:N)
 		con  = game_con.state_conlist[i].constraints[end]
 		inds = game_con.state_conlist[i].inds[end]
-		conval = TrajectoryOptimization.ConVal(n,m,con,inds)
+		conval = Altro.ALConVal(n,m,con,inds)
 		push!(game_con.state_conval[i], conval)
 	end
 	return nothing

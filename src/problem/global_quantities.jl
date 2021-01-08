@@ -48,7 +48,7 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
 	end
 
 	# Constraints
-
+	constraint_residual!(prob, pdtraj)
 
 	# Dynamics
     for k = 1:N-1
@@ -99,6 +99,9 @@ function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
 			valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i].cost[k].R[pu[i],pu[i]]) : nothing
 		end
 	end
+
+	# Constraints
+	constraint_jacobian_residual!(prob, pdtraj)
 
 	# Dynamics
 	for k = 1:N-1

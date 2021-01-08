@@ -2,6 +2,7 @@ module Algames
 
 greet() = print("Hello World!")
 
+using Altro
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
@@ -42,12 +43,18 @@ export
 export
     ControlBoundConstraint,
     WallConstraint,
-    evaluate,
     add_collision_avoidance!,
     add_control_bound!,
     add_circle_constraint!,
     Wall,
-    add_wall_constraint!
+    add_wall_constraint!,
+    set_constraint_params!,
+    reset!, # need test
+    reset_duals!, # need test
+    reset_penalties!, # need test
+    penalty_update!, # need test
+    constraint_jacobian_residual!,
+    constraint_residual!
 
 # Core
 export
@@ -68,6 +75,7 @@ export
 
 # Problem
 export
+    Penalty,
     Regularizer,
     set!,
     mult!,
@@ -110,6 +118,14 @@ include("core/newton_core.jl")
 # Struct
 include("struct/primal_dual_traj.jl")
 include("struct/violations.jl")
+include("struct/regularizer.jl")
+include("struct/options.jl")
+
+# Constraints
+include("constraints/control_bound_constraint.jl")
+include("constraints/wall_constraint.jl")
+include("constraints/game_constraints.jl")
+include("constraints/constraints_methods.jl")
 
 # Problem
 include("problem/problem.jl")
@@ -118,9 +134,7 @@ include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
 
 # Constraints
-include("constraints/control_bound_constraint.jl")
-include("constraints/wall_constraint.jl")
-include("constraints/constraints_methods.jl")
+include("constraints/constraint_derivatives.jl")
 
 # Plots
 include("plots/solver_plots.jl")

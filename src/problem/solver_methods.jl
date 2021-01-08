@@ -2,7 +2,7 @@
 # Solver Methods
 ################################################################################
 
-function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vis::Bool=false)
+function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,SVx}# vis::Visualizer=Visualizer(), live_vis::Bool=false)
 	model = prob.model
 	core = prob.core
 	game_con = prob.game_con
@@ -10,19 +10,17 @@ function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vi
 
 	# Set initial trajectory
 	Random.seed!(100)
-	# init_traj!(prob.pdtraj; x0=prob.x0, f=rand, amplitude=1e-8)
-	init_traj!(prob.pdtraj; x0=prob.x0, f=zeros, amplitude=1e-8)
-	# init_traj!(prob.pdtraj_trial; x0=prob.x0, f=rand, amplitude=1e-8)
-	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=zeros, amplitude=1e-8)
+	init_traj!(prob.pdtraj; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init)
+	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init)
 	init_traj!(prob.Δpdtraj; x0=prob.x0, f=zeros, amplitude=0.0)
 
 	# Set the initial penalties
-	#XXX pdtraj.ρ = SVector{1,T}([opts.ρ_0])
-	#XXX pdtraj_trial.ρ = SVector{1,T}([opts.ρ_trial])
+	prob.pen.ρ = SVector{1,T}([opts.ρ_0])
+	prob.pen.ρ_trial = SVector{1,T}([opts.ρ_trial])
 
 	# Reset Statistics and constraints
 	reset!(prob.stats)
-	#XXX reset!(game_con)
+	reset!(game_con)
 	# Iterative solve
     for k = 1:opts.outer_iter
 		#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
@@ -46,10 +44,10 @@ function newton_solve!(prob::GameProblem)# vis::Visualizer=Visualizer(), live_vi
 		# Kick out before updating the penalty and duals
         k == opts.outer_iter ? break : nothing
 		# Dual Ascent
-		#XXX dual_ascent!(model, opts, pdtraj)
 		#XXX dual_ascent!(game_con, pdtraj)
 		# Increasing Schedule
-		#XXX pdtraj.ρ = min.(pdtraj.ρ * opts.ρ_increase, opts.ρ_max)
+		prob.pen.ρ = min.(prob.pen.ρ * opts.ρ_increase, opts.ρ_max)
+		penalty_update!(game_con)
     end
 	#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
 	#XXX dist = ResidualDistribution13(res)
@@ -84,9 +82,7 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 	update_traj!(prob.pdtraj, prob.pdtraj, α, prob.Δpdtraj)
 
 	failed_ls = j == opts.ls_iter
-	# LS_count += Int(failed_ls)
 	failed_ls ? LS_count += 1 : LS_count = 0
-	# condi = 0.0
 	# condi = cond(Array(core.jac))
 	opts.inner_print ? display_solver_data(k, l, j, res_norm, opts.reg) : nothing
 	#XXX XXX opts.inner_print ? display_condition_data(res) : nothing
@@ -99,13 +95,11 @@ function line_search(prob::GameProblem, res_norm::T) where {T}
 
 	j = 1
 	α = 1.0
-	# @show res_norm
 	while j < opts.ls_iter
 		update_traj!(prob.pdtraj_trial, prob.pdtraj, α, prob.Δpdtraj)
 		residual!(prob, prob.pdtraj_trial)
 		#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj_trial, pdtraj) : nothing# should add regularization term to prevent deviation from pdtraj
 		res_norm_trial = norm(core.res, 1)/length(core.res)
-		# @show res_norm_trial
 		if res_norm_trial <= (1.0-α*opts.β)*res_norm
 			LS_count = 0
 			break

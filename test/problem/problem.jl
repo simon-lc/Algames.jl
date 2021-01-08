@@ -1,8 +1,11 @@
 @testset "Problem" begin
 
-    # Test Options
-    opts = Options()
-    @test typeof(opts) <: Options
+    # Test Penalty
+    T = Float64
+    pen0 = Penalty{T}(SVector{1,T}(1.0), SVector{1,T}(1.0))
+    pen1 = Penalty(1.0)
+    @test pen0.ρ == pen1.ρ
+    @test pen0.ρ_trial == pen1.ρ_trial
 
     # Test GameObjective
     v = [1,2,3]
@@ -66,15 +69,6 @@
     # Terminal cost
     @test norm(game_obj.E[1].cost[end].Q - game_obj.obj[1].cost[end].Q, 1) < 1e-10
     @test norm(game_obj.E[1].cost[end].R, 1) < 1e-10
-
-
-    # Test GameConstraintValues
-    N = 10
-    model = UnicycleGame(p=3)
-    probsize = ProblemSize(N,model)
-    game_con = GameConstraintValues(probsize)
-    @test game_con.p == model.p
-    @test length(game_con.state_conlist) == model.p
 
     # Test GameProblem
     T = Float64

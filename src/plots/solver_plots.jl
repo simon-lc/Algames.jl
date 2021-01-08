@@ -3,7 +3,7 @@
 ################################################################################
 
 function plot_traj!(model::AbstractGameModel, traj::Traj)
-    plt = plot()
+    plt = plot(aspect_ratio=:equal)
     N = length(traj)
     for i = 1:model.p
         @show model.pz[i][1]
