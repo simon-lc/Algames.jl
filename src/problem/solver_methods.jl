@@ -48,8 +48,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
 	#XXX dist = ResidualDistribution13(res)
 	#XXX record!(prob.stats, vio, dist)
-	dyn_vio = dynamics_violation(model, prob.pdtraj)
-	record!(prob.stats, dyn_vio)
+	record!(prob.stats, model, game_con, prob.pdtraj)
     return nothing
 end
 

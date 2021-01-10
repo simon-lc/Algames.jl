@@ -29,7 +29,7 @@
     opts.reg_0 = 1e-7
     newton_solve!(prob)
     @test norm(prob.core.res, 1)/length(prob.core.res) < 1e-6
-    @test dynamics_violation(model, prob.pdtraj) < 1e-6
+    @test dynamics_violation(model, prob.pdtraj).max < 1e-6
 
     # Test solver on a non linear unconstrained problem with one player
     T = Float64
@@ -58,7 +58,7 @@
     opts.reg_0 = 1e-7
     newton_solve!(prob)
     @test norm(prob.core.res, 1)/length(prob.core.res) < 1e-6
-    @test dynamics_violation(model, prob.pdtraj) < 1e-6
+    @test dynamics_violation(model, prob.pdtraj).max < 1e-6
 
 
     # Test solver on a linear unconstrained problem with 2 players
@@ -88,7 +88,7 @@
     opts.reg_0 = 1e-7
     newton_solve!(prob)
     @test norm(prob.core.res, 1)/length(prob.core.res) < 1e-6
-    @test dynamics_violation(model, prob.pdtraj) < 1e-6
+    @test dynamics_violation(model, prob.pdtraj).max < 1e-6
 
 
     # Test solver on a non linear unconstrained problem with 2 players
@@ -118,7 +118,7 @@
     opts.reg_0 = 1e-7
     newton_solve!(prob)
     @test norm(prob.core.res, 1)/length(prob.core.res) < 1e-6
-    @test dynamics_violation(model, prob.pdtraj) < 1e-6
+    @test dynamics_violation(model, prob.pdtraj).max < 1e-6
 
 
 end

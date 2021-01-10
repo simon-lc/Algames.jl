@@ -39,7 +39,11 @@ export
     record!,
     reset!,
     DynamicsViolation,
-    dynamics_violation
+    dynamics_violation,
+    ControlViolation,
+    control_violation,
+    StateViolation,
+    state_violation
 
 # Constraints
 export
