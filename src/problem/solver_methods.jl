@@ -23,11 +23,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	reset!(game_con)
 	# Iterative solve
     for k = 1:opts.outer_iter
-		#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
-		#XXX dist = ResidualDistribution13(res)
-		#XXX record!(prob.stats, vio, dist)
-		record!(prob.stats)
-
+		record!(prob.stats, model, game_con, prob.pdtraj)
 		# Initialize regularization and failed line search count.
 		set!(opts.reg, opts.reg_0)
 		LS_count = 0
@@ -52,7 +48,8 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
 	#XXX dist = ResidualDistribution13(res)
 	#XXX record!(prob.stats, vio, dist)
-	record!(prob.stats)
+	dyn_vio = dynamics_violation(model, prob.pdtraj)
+	record!(prob.stats, dyn_vio)
     return nothing
 end
 

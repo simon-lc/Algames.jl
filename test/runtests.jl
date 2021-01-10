@@ -19,6 +19,7 @@ include("VecPair.jl")
 # Dynamics
 include("dynamics/double_integrator.jl")
 include("dynamics/unicycle.jl")
+include("dynamics/bicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")

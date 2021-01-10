@@ -25,6 +25,7 @@ export
     AbstractGameModel,
     DoubleIntegratorGame,
     UnicycleGame,
+    BicycleGame,
     dynamics
 
 # Struct
@@ -37,6 +38,7 @@ export
     Statistics,
     record!,
     reset!,
+    DynamicsViolation,
     dynamics_violation
 
 # Constraints
@@ -106,10 +108,10 @@ include("newcode.jl")
 include("dynamics/game_model.jl")
 include("dynamics/double_integrator.jl")
 include("dynamics/unicycle.jl")
+include("dynamics/bicycle.jl")
 
 # Struct
 include("struct/problem_size.jl")
-include("struct/statistics.jl")
 
 # Core
 include("core/stamp.jl")
@@ -117,7 +119,6 @@ include("core/newton_core.jl")
 
 # Struct
 include("struct/primal_dual_traj.jl")
-include("struct/violations.jl")
 include("struct/regularizer.jl")
 include("struct/options.jl")
 
@@ -126,6 +127,10 @@ include("constraints/control_bound_constraint.jl")
 include("constraints/wall_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
+
+# Struct
+include("struct/violations.jl")
+include("struct/statistics.jl")
 
 # Problem
 include("problem/problem.jl")
