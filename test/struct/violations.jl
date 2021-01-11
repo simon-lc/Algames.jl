@@ -37,4 +37,19 @@
     @test norm(sta_vio.vio - [0; sqrt(2)/2*ones(N-1)...], 1) <= 1e-10
     @test norm(sta_vio.max - sqrt(2)/2,1) < 1e-10
 
+    # Test state violation
+    core = NewtonCore(probsize)
+    opt_vio = optimality_violation(core)
+    @test opt_vio.N == core.probsize.N
+    @test norm(opt_vio.vio - zeros(N), 1) <= 1e-10
+    @test norm(opt_vio.max - 0.0,1) < 1e-10
+
+    stamp = stampify(:opt, 2, :u, 2, 5)
+    add2sub(core.res_sub[stamp], 1e2*ones(model.mi[2]))
+    opt_vio = optimality_violation(core)
+    vio = zeros(N)
+    vio[5] = 1e2
+    @test norm(opt_vio.vio - vio, 1) <= 1e-10
+    @test norm(opt_vio.max - 1e2,1) < 1e-10
+
 end

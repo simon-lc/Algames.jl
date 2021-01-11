@@ -55,6 +55,22 @@
 	"Maximum Lagrange multiplier."
 	λ_max::T=1e7
 
+	"Dual ascent step size."
+	α_dual::T=1e0
+
+	# Constraint satisfaction criterion
+	"Dynamics constraint satisfaction criterion."
+	ϵ_dyn::T=1e-3
+
+	"State constraint satisfaction criterion."
+	ϵ_sta::T=1e-3
+
+	"Control constraint satisfaction criterion."
+	ϵ_con::T=1e-3
+
+	"Optimality constraint satisfaction criterion."
+	ϵ_opt::T=1e-3
+
 	# Augmented Lagrangian iterations.
 	"Outer loop iterations."
 	outer_iter::Int=7

@@ -23,7 +23,8 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	reset!(game_con)
 	# Iterative solve
     for k = 1:opts.outer_iter
-		record!(prob.stats, model, game_con, prob.pdtraj)
+		# plot_traj!(model, prob.pdtraj.pr)
+		# record!(prob.stats, core, model, game_con, prob.pdtraj)
 		# Initialize regularization and failed line search count.
 		set!(opts.reg, opts.reg_0)
 		LS_count = 0
@@ -32,23 +33,27 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
         for l = 1:opts.inner_iter
 			set!(opts.reg, opts.reg_0*l^4)
 			LS_count, control_flow = inner_iteration(prob, LS_count, k, l)
-			LS_count >= 3 || control_flow == :break ? break : nothing
+			LS_count >= 1|| control_flow == :break ? break : nothing
 		end
 
 		# Visualize trajectory
 		#XXX live_vis && (opts.outer_iter-k)%1==0 ? visualize!(vis, model, pdtraj.q) : nothing
 		# Kick out before updating the penalty and duals
-        k == opts.outer_iter ? break : nothing
+		if k == opts.outer_iter || (
+			prob.stats.dyn_vio[end].max < opts.ϵ_dyn &&
+			prob.stats.con_vio[end].max < opts.ϵ_con &&
+			prob.stats.sta_vio[end].max < opts.ϵ_sta &&
+			prob.stats.opt_vio[end].max < opts.ϵ_opt)
+			break
+		end
 		# Dual Ascent
-		#XXX dual_ascent!(game_con, pdtraj)
+		evaluate!(game_con, prob.pdtraj.pr)
+		dual_update!(game_con)
 		# Increasing Schedule
 		prob.pen.ρ = min.(prob.pen.ρ * opts.ρ_increase, opts.ρ_max)
 		penalty_update!(game_con)
     end
-	#XXX vio = evaluate_constraints(model, pdtraj, verbose=true)
-	#XXX dist = ResidualDistribution13(res)
-	#XXX record!(prob.stats, vio, dist)
-	record!(prob.stats, model, game_con, prob.pdtraj)
+	record!(prob.stats, core, model, game_con, prob.pdtraj)
     return nothing
 end
 
@@ -59,11 +64,12 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 	# Residual
 	residual!(prob, prob.pdtraj)
 	#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj, pdtraj) : nothing # should do nothing since we regularize around pdtraj
-	# loss = [L_opt(cost,con_traj,model,opts,pdtraj),
-	# 		L_mdp(model,opts,pdtraj),
-	# 		L_nf(model,opts,pdtraj)]
+	record!(prob.stats, prob.core, prob.model, prob.game_con, prob.pdtraj)
 	res_norm = norm(core.res, 1)/length(core.res)
-	if res_norm <= 1e-6
+	# if res_norm <= 10^-(4 + 4*k/opts.outer_iter)
+	# 	return LS_count, :break
+	# end
+	if prob.stats.opt_vio[end].max < opts.ϵ_opt
 		return LS_count, :break
 	end
 	# Residual Jacobian
@@ -75,14 +81,36 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 
 	# Line Search
 	α, j = line_search(prob, res_norm)
-	update_traj!(prob.pdtraj, prob.pdtraj, α, prob.Δpdtraj)
-
 	failed_ls = j == opts.ls_iter
 	failed_ls ? LS_count += 1 : LS_count = 0
-	# condi = cond(Array(core.jac))
-	opts.inner_print ? display_solver_data(k, l, j, res_norm, opts.reg) : nothing
+	update_traj!(prob.pdtraj, prob.pdtraj, α, prob.Δpdtraj)
+	Δ = step_size(prob.Δpdtraj, α)
+	# if Δ < 1e-8
+	# 	return LS_count, :break
+	# end
+
+	opts.inner_print ? display_solver_data(k, l, j, Δ, res_norm, opts.reg) : nothing
 	#XXX XXX opts.inner_print ? display_condition_data(res) : nothing
 	return LS_count, :continue
+end
+
+function step_size(pdtraj::PrimalDualTraj, α::T) where {T}
+	s = 0.0
+	N = pdtraj.probsize.N
+	n = pdtraj.probsize.n
+	m = pdtraj.probsize.m
+	p = pdtraj.probsize.p
+	for k = 1:N-1
+		s += norm(state(pdtraj.pr[k+1]), 1) # xk+1
+		s += norm(control(pdtraj.pr[k]), 1) # uk
+		for i = 1:p
+			# s += norm(pdtraj.du[i][k], 1) # λik
+		end
+	end
+	s *= α
+	# s /= (N-1)*(n+m+n*p)
+	s /= (N-1)*(n+m)
+	return s
 end
 
 function line_search(prob::GameProblem, res_norm::T) where {T}

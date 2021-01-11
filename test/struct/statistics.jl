@@ -10,7 +10,8 @@
     dyn_vio = DynamicsViolation(N)
     con_vio = ControlViolation(N)
     sta_vio = StateViolation(N)
-    record!(stats, dyn_vio, con_vio, sta_vio)
+    opt_vio = OptimalityViolation(N)
+    record!(stats, dyn_vio, con_vio, sta_vio, opt_vio)
     @test stats.iter == 1
 
     game_con = GameConstraintValues(probsize)
@@ -20,7 +21,8 @@
     walls = [Wall([0.,1], [1,0], [1,1]/sqrt(2))]
     add_wall_constraint!(game_con, probsize, walls)
     pdtraj = PrimalDualTraj(probsize, dt)
-    record!(stats, model, game_con, pdtraj)
+    core = NewtonCore(probsize)
+    record!(stats, core, model, game_con, pdtraj)
     @test stats.iter == 2
 
     reset!(stats)

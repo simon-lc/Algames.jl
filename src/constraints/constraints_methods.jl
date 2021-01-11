@@ -104,3 +104,129 @@ function add_wall_constraint!(game_con::GameConstraintValues, probsize::ProblemS
 	end
 	return nothing
 end
+
+################################################################################
+# Helpers
+################################################################################
+function TrajectoryOptimization.cost_expansion!(conval::TrajectoryOptimization.AbstractConstraintValues)
+    s = TrajectoryOptimization.sense(conval)
+    for (i,k) in enumerate(conval.inds)
+        TrajectoryOptimization.cost_expansion!(s, conval, i)
+    end
+    return nothing
+end
+
+function reset!(game_con::GameConstraintValues)
+    reset_duals!(game_con)
+    reset_penalties!(game_con)
+    return nothing
+end
+
+function reset_duals!(game_con::GameConstraintValues)
+    p = game_con.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            Altro.reset_duals!(conval)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        Altro.reset_duals!(conval)
+    end
+    return nothing
+end
+
+function reset_penalties!(game_con::GameConstraintValues)
+    p = game_con.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            Altro.reset_penalties!(conval)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        Altro.reset_penalties!(conval)
+    end
+    return nothing
+end
+
+function penalty_update!(game_con::GameConstraintValues)
+    p = game_con.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            Altro.penalty_update!(conval)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        Altro.penalty_update!(conval)
+    end
+    return nothing
+end
+
+function penalty_update!(con::Altro.ALConVal)
+    for i in eachindex(con.μ)
+        con.μ[i] .*= con.params.ϕ
+    end
+end
+
+function dual_update!(game_con::GameConstraintValues)
+    p = game_con.p
+	α_dual = game_con.α_dual
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            # Altro.dual_update!(conval)
+			dual_update!(conval, α_dual)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+		# Altro.dual_update!(conval)
+		dual_update!(conval, α_dual)
+    end
+    return nothing
+end
+
+function evaluate!(game_con::GameConstraintValues, traj::Traj)
+    p = game_con.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            TrajectoryOptimization.evaluate!(conval, traj)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        TrajectoryOptimization.evaluate!(conval, traj)
+    end
+    return nothing
+end
+
+
+
+
+
+function dual_update!(conval::Altro.ALConVal, α_dual::T) where {T}
+	c = conval.vals
+	λ = conval.λ
+	μ = conval.μ
+	λ_max = conval.params.λ_max
+	cone = TrajectoryOptimization.sense(conval.con)
+	for i in eachindex(conval.inds)
+		λ[i] .= dual_update(cone, SVector(λ[i]), SVector(c[i]), SVector(μ[i]), λ_max, α_dual)
+	end
+end
+
+function dual_update(::Equality, λ, c, μ, λmax, α_dual)
+	λbar = λ + α_dual*μ .* c
+	return clamp.(λbar, -λmax, λmax)
+end
+
+function dual_update(::Inequality, λ, c, μ, λmax, α_dual)
+ 	λbar = λ + α_dual*μ .* c
+	return clamp.(λbar, 0, λmax)  # project onto the dual cone via max(0,x)
+end
+
+function dual_update(cone::Altro.SecondOrderCone, λ, c, μ, λmax, α_dual)
+	 λbar = λ - α_dual*μ .* c
+	 return TrajectoryOptimization.projection(cone, λbar)  # project onto the dual cone
+end

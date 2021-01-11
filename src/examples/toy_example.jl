@@ -4,7 +4,7 @@
 T = Float64
 
 # Define the dynamics of the system
-p = 4 # Number of players
+p = 3 # Number of players
 model = UnicycleGame(p=p) # game with 3 players with unicycle dynamics
 n = model.n
 m = model.m
@@ -22,7 +22,7 @@ R = [Diagonal(0.1*ones(SVector{model.mi[i],T})) for i=1:p] # Quadratic control c
 xf = [SVector{model.ni[1],T}([2,+0.4,0,0]),
       SVector{model.ni[2],T}([2, 0.0,0,0]),
       SVector{model.ni[3],T}([3,-0.4,0,0]),
-      SVector{model.ni[4],T}([3,+0.8,0,0]),
+      # SVector{model.ni[4],T}([3,+0.8,0,0]),
       ]
 # Desired control
 uf = [zeros(SVector{model.mi[i],T}) for i=1:p]
@@ -35,11 +35,11 @@ game_con = GameConstraintValues(probsize)
 radius = 0.05
 add_collision_avoidance!(game_con, probsize, radius)
 # Add control bounds
-u_max =  100*ones(SVector{m,T})
-u_min = -100*ones(SVector{m,T})
+u_max =  5*ones(SVector{m,T})
+u_min = -5*ones(SVector{m,T})
 add_control_bound!(game_con, probsize, u_max, u_min)
 # Add wall constraint
-walls = [Wall([0.5,-0.5], [1.5,0.5], [1.,-1.]/sqrt(2))]
+walls = [Wall([-1.0,-1.75], [1.0,0.25], [1.,-1.]/sqrt(2))]
 add_wall_constraint!(game_con, probsize, walls)
 # Add circle constraint
 xc = [1., 2., 3.]
@@ -49,15 +49,24 @@ add_circle_constraint!(game_con, probsize, xc, yc, radius)
 
 # Define the initial state of the system
 x0 = SVector{model.n,T}([
-    0.0, 0.0, 0.5, 0.0,
-   -0.4, 0.0, 0.4, 0.6,
-    0.0, 0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.5, #0.0,
+   -0.4, 0.0, 0.7, #0.6,
+    0.0, 0.0, 0.0, #0.0,
+    0.0, 0.0, 0.0, #0.0,
     ])
 
 # Define the Options of the solver
 opts = Options()
-
+opts.ls_iter = 15
+opts.outer_iter = 20
+opts.inner_iter = 20
+opts.reg_0 = 1e-8
+opts.α_dual = 1.0
+opts.λ_max = 1.0*1e7
+opts.ϵ_dyn = 1e-3
+opts.ϵ_sta = 1e-3
+opts.ϵ_con = 1e-3
+opts.ϵ_opt = 1e-3
 # Define the game problem
 prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 
@@ -65,27 +74,16 @@ prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 @time newton_solve!(prob)
 # @profiler newton_solve!(prob)
 
-plot_traj!(prob.model, pdtraj0.pr)
+prob.game_con.α_dual
+
+plot_violation!(prob.stats)
+prob.pen
+prob.pdtraj.du[1][1]
+prob.game_con.state_conval[1][3].λ[10][1]
+prob.game_con.state_conval[1][1]
+plot_traj!(prob.model, prob.pdtraj.pr)
 
 
-pdtraj0 = PrimalDualTraj(probsize,dt)
-init_traj!(pdtraj0, f=rand, amplitude=1e3)
-game_con = GameConstraintValues(probsize)
-add_control_bound!(game_con, probsize, u_max, u_min)
-cval = game_con.control_conval[1]
-TrajectoryOptimization.evaluate!(cval, pdtraj0.pr)
-TrajectoryOptimization.max_violation!(cval)
-cval.c_max
-# Altro.violation!(cval)
-
-
-
-a = 10
-a = 10
-a = 10
-a = 10
-
-# add violation statistics
 # add cost statistics
 # add AL cost statistics
 # add dual ascent

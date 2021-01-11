@@ -85,3 +85,37 @@ function state_violation(game_con::GameConstraintValues, pdtraj::PrimalDualTraj)
 	x_vio.max = maximum(x_vio.vio)
     return x_vio
 end
+
+################################################################################
+# Optimality Violation
+################################################################################
+
+mutable struct OptimalityViolation{SVd,T}
+	N::Int
+	vio::SVd
+	max::T
+end
+
+function OptimalityViolation(N::Int)
+	vio = zeros(N)
+	max = 0.0
+	TYPE = typeof.((vio,max))
+	return OptimalityViolation{TYPE...}(N,vio,max)
+end
+
+function optimality_violation(core::NewtonCore)
+	N = core.probsize.N
+	p = core.probsize.p
+	o_vio = OptimalityViolation(N)
+	stamp = VStamp()
+	for i = 1:p
+		for k = 1:N
+			stampify!(stamp, :opt, i, :x, 1, k)
+			valid(stamp, N, p) ? o_vio.vio[k] = max(o_vio.vio[k], maximum(abs.(core.res_sub[stamp]))) : nothing
+			stampify!(stamp, :opt, i, :u, i, k)
+			valid(stamp, N, p) ? o_vio.vio[k] = max(o_vio.vio[k], maximum(abs.(core.res_sub[stamp]))) : nothing
+		end
+	end
+	o_vio.max = maximum(o_vio.vio)
+    return o_vio
+end

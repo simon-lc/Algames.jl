@@ -43,7 +43,9 @@ export
     ControlViolation,
     control_violation,
     StateViolation,
-    state_violation
+    state_violation,
+    OptimalityViolation,
+    optimality_violation
 
 # Constraints
 export
@@ -59,6 +61,8 @@ export
     reset_duals!, # need test
     reset_penalties!, # need test
     penalty_update!, # need test
+    dual_update!, # need test
+    evaluate!, # need test
     constraint_jacobian_residual!,
     constraint_residual!
 
@@ -104,7 +108,8 @@ export
 
 # Plots
 export
-    plot_traj
+    plot_traj!,
+    plot_violation!
 
 include("newcode.jl")
 

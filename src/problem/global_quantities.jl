@@ -186,22 +186,24 @@ end
 
 function display_solver_header()
 	@printf(
-		"%-3s %-2s %-2s %-6s %-6s \n",
+		"%-3s %-2s %-2s %-6s %-6s %-6s \n",
 		"out",
 		"in",
 		"α",
+		"Δ",
 		"res",
 		"reg",
 		)
 	return nothing
 end
 
-function display_solver_data(k, l, j, res_norm, reg)#, condi, loss, val_scale, jac_scale)
+function display_solver_data(k, l, j, Δ, res_norm, reg)#, condi, loss, val_scale, jac_scale)
 	@printf(
-		"%-3s %-2s %-2s %-6s %-6s \n",
+		"%-3s %-2s %-2s %-6s %-6s %-6s \n",
 		k,
 		l,
 		j,
+		@sprintf("%.0e", Δ),
 		@sprintf("%.0e", res_norm),
 		@sprintf("%.0e", reg.x),
 		)
