@@ -11,61 +11,6 @@ function Penalty(ρ::T) where {T}
 	return Penalty(SVector{1,T}(ρ), SVector{1,T}(ρ))
 end
 
-################################################################################
-# GameObjective
-################################################################################
-
-mutable struct GameObjective
-	p::Int                 # number of players
-	obj::Vector{Objective} # objective of each player
-	E::Vector{Objective}   # quadratic expansion of the objective of each player
-end
-
-function GameObjective(Q::Vector{DQ}, R::Vector{DR}, xf::Vector{SVx}, uf::Vector{SVu},
-	N::Int, model::AbstractGameModel) where {DQ,DR,SVx,SVu}
-	T = eltype(xf[1])
-	n = model.n
-	m = model.m
-	p = model.p
-	@assert length(Q) == length(R) == length(xf) == length(uf)
-
-	obj = Vector{Objective}(undef, p)
-	E = Vector{Objective}(undef, p)
-	for i = 1:p
-		Qi = Diagonal(SVector{n,T}(expand_vector(diag(Q[i]), model.pz[i], n)))
-		Ri = Diagonal(SVector{m,T}(expand_vector(diag(R[i]), model.pu[i], m)))
-		Rf = Diagonal(zeros(SVector{m,T}))
-		xfi = SVector{n,T}(expand_vector(xf[i], model.pz[i], n))
-		ufi = SVector{m,T}(expand_vector(uf[i], model.pu[i], m))
-		cost = LQRCost(Qi,Ri,xfi,ufi,checks=false)
-		cost_term = LQRCost(Qi,Rf,xfi,checks=false)
-		obj[i] = Objective(cost, cost_term, N)
-		E[i] = Objective([LQRCost(1e-10*ones(n,n)+I, 1e-10*zeros(m,m)+I, zeros(MVector{n,T})) for k=1:N])
-	end
-	return GameObjective(p,obj,E)
-end
-
-function expand_vector(v::AbstractVector{T}, inds::AbstractVector{Int}, n::Int) where {T}
-	V = zeros(n)
-	V[inds] = v
-	return V
-end
-
-function cost_gradient!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
-	p = game_obj.p
-	for i = 1:p
-		TrajectoryOptimization.cost_gradient!(game_obj.E[i], game_obj.obj[i], pdtraj.pr, true)
-	end
-	return nothing
-end
-
-function cost_hessian!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
-	p = game_obj.p
-	for i = 1:p
-		TrajectoryOptimization.cost_hessian!(game_obj.E[i], game_obj.obj[i], pdtraj.pr, true, true)
-	end
-	return nothing
-end
 
 ################################################################################
 # GameProblem

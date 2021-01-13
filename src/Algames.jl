@@ -84,6 +84,14 @@ export
     stampify!,
     valid
 
+# Objective
+export
+    GameObjective,
+    cost_gradient!,
+    cost_hessian!,
+    add_collision_cost!,
+    CollisionCost
+
 # Problem
 export
     Penalty,
@@ -91,9 +99,6 @@ export
     set!,
     mult!,
     Options,
-    GameObjective,
-    cost_gradient!,
-    cost_hessian!,
     GameConstraintValues,
     GameProblem,
     residual!,
@@ -143,6 +148,9 @@ include("constraints/constraints_methods.jl")
 # Struct
 include("struct/violations.jl")
 include("struct/statistics.jl")
+
+# Objective
+include("objective/objective.jl")
 
 # Problem
 include("problem/problem.jl")

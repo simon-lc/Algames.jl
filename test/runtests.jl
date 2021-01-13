@@ -40,6 +40,9 @@ include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
 include("constraints/constraint_derivatives.jl")
 
+# Objective
+include("objective/objective.jl")
+
 # Problem
 include("problem/problem.jl")
 include("problem/local_quantities.jl")

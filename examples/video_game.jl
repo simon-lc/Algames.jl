@@ -116,7 +116,7 @@
 # 	v = [0., 0., 0.]
 # 	char = 'N'
 # 	count = 0
-# 	for k = 1:2000
+# 	for k = 1:21500
 # 		c, empty_stream  = get_char()
 # 		if empty_stream
 # 			count += 1
