@@ -85,5 +85,20 @@
     @test target.du[1][end] == 60*ones(n)
     @test target.du[end][end] == 60*ones(n)
 
+    # Test Δ_step
+    T = Float64
+    N = 10
+    dt = 0.2
+    p = 3
+    model = UnicycleGame(p=p)
+    probsize = ProblemSize(N, model)
+    pdtraj = PrimalDualTraj(probsize, dt)
+    n = model.n
+    m = model.m
+    x0 = 1e3*ones(SVector{model.n,T})
+    Δ = PrimalDualTraj(probsize, dt)
+    init_traj!(pdtraj, x0=x0, f=ones, amplitude=10.0)
+    α = 0.5
+    @test Δ_step(pdtraj, α) == 10.0*α
 
 end

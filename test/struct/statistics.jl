@@ -7,11 +7,12 @@
     model = UnicycleGame(p=3)
     probsize = ProblemSize(N,model)
 
+    k = 1
     dyn_vio = DynamicsViolation(N)
     con_vio = ControlViolation(N)
     sta_vio = StateViolation(N)
     opt_vio = OptimalityViolation(N)
-    record!(stats, dyn_vio, con_vio, sta_vio, opt_vio)
+    record!(stats, dyn_vio, con_vio, sta_vio, opt_vio, k)
     @test stats.iter == 1
 
     game_con = GameConstraintValues(probsize)
@@ -22,10 +23,13 @@
     add_wall_constraint!(game_con, probsize, walls)
     pdtraj = PrimalDualTraj(probsize, dt)
     core = NewtonCore(probsize)
-    record!(stats, core, model, game_con, pdtraj)
+    k = 2
+    record!(stats, core, model, game_con, pdtraj, k)
     @test stats.iter == 2
+    @test stats.outer_iter == [1,2]
 
     reset!(stats)
     @test stats.iter == 0
+    @test stats.outer_iter == Vector{Int}()
 
 end

@@ -60,7 +60,7 @@ opts = Options()
 opts.ls_iter = 15
 opts.outer_iter = 20
 opts.inner_iter = 20
-opts.reg_0 = 1e-8
+opts.reg_0 = 1e-3
 opts.α_dual = 1.0
 opts.λ_max = 1.0*1e7
 opts.ϵ_dyn = 1e-3
@@ -74,8 +74,6 @@ prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 @time newton_solve!(prob)
 # @profiler newton_solve!(prob)
 
-prob.game_con.α_dual
-
 plot_violation!(prob.stats)
 prob.pen
 prob.pdtraj.du[1][1]
@@ -83,9 +81,6 @@ prob.game_con.state_conval[1][3].λ[10][1]
 prob.game_con.state_conval[1][1]
 plot_traj!(prob.model, prob.pdtraj.pr)
 
-
-# add cost statistics
-# add AL cost statistics
-# add dual ascent
-# add inner loop violaion and residual threshold
-# add outer loop violaion and residual threshold
+prob.stats.outer_iter
+# add constraint as a cost
+# kick out of inner loop if not progress made

@@ -35,6 +35,7 @@ export
     init_traj!,
     update_traj!,
     set_traj!,
+    Δ_step,
     Statistics,
     record!,
     reset!,
@@ -57,12 +58,12 @@ export
     Wall,
     add_wall_constraint!,
     set_constraint_params!,
-    reset!, # need test
-    reset_duals!, # need test
-    reset_penalties!, # need test
-    penalty_update!, # need test
-    dual_update!, # need test
-    evaluate!, # need test
+    reset!,
+    reset_duals!,
+    reset_penalties!,
+    penalty_update!,
+    dual_update!,
+    evaluate!,
     constraint_jacobian_residual!,
     constraint_residual!
 
@@ -97,6 +98,8 @@ export
     GameProblem,
     residual!,
     residual_jacobian!,
+    regularize_residual!, # need test
+    regularize_residual_jacobian!, # need test
     add2sub,
     addI2sub,
     sparse_zero!,

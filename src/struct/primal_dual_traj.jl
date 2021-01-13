@@ -90,3 +90,22 @@ function update_traj!(target::PrimalDualTraj{KN,n,m,T,SVd},
     end
     return nothing
 end
+
+function Δ_step(pdtraj::PrimalDualTraj, α::T) where {T}
+	s = 0.0
+	N = pdtraj.probsize.N
+	n = pdtraj.probsize.n
+	m = pdtraj.probsize.m
+	p = pdtraj.probsize.p
+	for k = 1:N-1
+		s += norm(state(pdtraj.pr[k+1]), 1) # xk+1
+		s += norm(control(pdtraj.pr[k]), 1) # uk
+		for i = 1:p
+			# s += norm(pdtraj.du[i][k], 1) # λik
+		end
+	end
+	s *= α
+	# s /= (N-1)*(n+m+n*p)
+	s /= (N-1)*(n+m)
+	return s
+end

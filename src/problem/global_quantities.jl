@@ -58,6 +58,27 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
     return nothing
 end
 
+function regularize_residual!(core::NewtonCore, opts::Options, pdtraj::PrimalDualTraj, pdtraj_ref::PrimalDualTraj)
+	N = core.probsize.N
+	p = core.probsize.p
+	pu = core.probsize.pu
+
+	stamp = VStamp()
+	for k = 1:N-1
+		x = state(pdtraj.pr[k+1])
+		x_ref = state(pdtraj_ref.pr[k+1])
+		u = control(pdtraj.pr[k])
+		u_ref = control(pdtraj_ref.pr[k])
+		for i = 1:p
+			stampify!(stamp, :opt, i, :x, 1, k+1)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], opts.reg.x*(x - x_ref)) : nothing
+			stampify!(stamp, :opt, i, :u, i, k)
+			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], opts.reg.u*(u[pu[i]] - u_ref[pu[i]])) : nothing
+		end
+	end
+	return nothing
+end
+
 
 ################################################################################
 # Residual Jacobian

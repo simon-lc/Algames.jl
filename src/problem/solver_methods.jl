@@ -22,9 +22,10 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	reset!(prob.stats)
 	reset!(game_con)
 	# Iterative solve
+	out = 0
     for k = 1:opts.outer_iter
+		out = k
 		# plot_traj!(model, prob.pdtraj.pr)
-		# record!(prob.stats, core, model, game_con, prob.pdtraj)
 		# Initialize regularization and failed line search count.
 		set!(opts.reg, opts.reg_0)
 		LS_count = 0
@@ -53,7 +54,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 		prob.pen.ρ = min.(prob.pen.ρ * opts.ρ_increase, opts.ρ_max)
 		penalty_update!(game_con)
     end
-	record!(prob.stats, core, model, game_con, prob.pdtraj)
+	record!(prob.stats, core, model, game_con, prob.pdtraj, out)
     return nothing
 end
 
@@ -63,8 +64,8 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 
 	# Residual
 	residual!(prob, prob.pdtraj)
-	#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj, pdtraj) : nothing # should do nothing since we regularize around pdtraj
-	record!(prob.stats, prob.core, prob.model, prob.game_con, prob.pdtraj)
+	opts.regularize ? regularize_residual!(core, opts, prob.pdtraj, prob.pdtraj) : nothing # should do nothing since we regularize around pdtraj
+	record!(prob.stats, prob.core, prob.model, prob.game_con, prob.pdtraj, k)
 	res_norm = norm(core.res, 1)/length(core.res)
 	# if res_norm <= 10^-(4 + 4*k/opts.outer_iter)
 	# 	return LS_count, :break
@@ -84,33 +85,14 @@ function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 	failed_ls = j == opts.ls_iter
 	failed_ls ? LS_count += 1 : LS_count = 0
 	update_traj!(prob.pdtraj, prob.pdtraj, α, prob.Δpdtraj)
-	Δ = step_size(prob.Δpdtraj, α)
-	# if Δ < 1e-8
-	# 	return LS_count, :break
-	# end
+	Δ = Δ_step(prob.Δpdtraj, α)
+	if Δ < 1e-9
+		return LS_count, :break
+	end
 
 	opts.inner_print ? display_solver_data(k, l, j, Δ, res_norm, opts.reg) : nothing
 	#XXX XXX opts.inner_print ? display_condition_data(res) : nothing
 	return LS_count, :continue
-end
-
-function step_size(pdtraj::PrimalDualTraj, α::T) where {T}
-	s = 0.0
-	N = pdtraj.probsize.N
-	n = pdtraj.probsize.n
-	m = pdtraj.probsize.m
-	p = pdtraj.probsize.p
-	for k = 1:N-1
-		s += norm(state(pdtraj.pr[k+1]), 1) # xk+1
-		s += norm(control(pdtraj.pr[k]), 1) # uk
-		for i = 1:p
-			# s += norm(pdtraj.du[i][k], 1) # λik
-		end
-	end
-	s *= α
-	# s /= (N-1)*(n+m+n*p)
-	s /= (N-1)*(n+m)
-	return s
 end
 
 function line_search(prob::GameProblem, res_norm::T) where {T}
@@ -122,7 +104,7 @@ function line_search(prob::GameProblem, res_norm::T) where {T}
 	while j < opts.ls_iter
 		update_traj!(prob.pdtraj_trial, prob.pdtraj, α, prob.Δpdtraj)
 		residual!(prob, prob.pdtraj_trial)
-		#XXX XXX opts.regularize ? regularize_residual!(res, opts, pdtraj_trial, pdtraj) : nothing# should add regularization term to prevent deviation from pdtraj
+		opts.regularize ? regularize_residual!(core, opts, prob.pdtraj_trial, prob.pdtraj) : nothing# should add regularization term to prevent deviation from pdtraj
 		res_norm_trial = norm(core.res, 1)/length(core.res)
 		if res_norm_trial <= (1.0-α*opts.β)*res_norm
 			LS_count = 0
