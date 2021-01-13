@@ -25,12 +25,18 @@ function residual!(prob::GameProblem{KN,n,m,T,SVd,SVx}, pdtraj::PrimalDualTraj{K
 		# State cost
 		for k = 1:N
 			stampify!(stamp, :opt, i, :x, 1, k)
-			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i].cost[k].q) : nothing
+			n_obj = length(game_obj.E[i])
+			for j = 1:n_obj
+				valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i][j].cost[k].q) : nothing
+			end
 		end
 		# Control Cost
 		for k = 1:N-1
 			stampify!(stamp, :opt, i, :u, i, k)
-			valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i].cost[k].r[pu[i]]) : nothing
+			n_obj = length(game_obj.E[i])
+			for j = 1:n_obj
+				valid(stamp, N, p) ? add2sub(core.res_sub[stamp], game_obj.E[i][j].cost[k].r[pu[i]]) : nothing
+			end
 		end
 	end
 	# Dynamics penalty
@@ -112,12 +118,18 @@ function residual_jacobian!(prob::GameProblem{KN,n,m,T,SVd,SVx},
 		# State cost
 		for k = 1:N
 			stampify!(stamp, :opt, i, :x, 1, k, :x, 1, k)
-			valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i].cost[k].Q) : nothing
+			n_obj = length(game_obj.E[i])
+			for j = 1:n_obj
+				valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i][j].cost[k].Q) : nothing
+			end
 		end
 		# Control cost
 		for k = 1:N-1
 			stampify!(stamp, :opt, i, :u, i, k, :u, i, k)
-			valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i].cost[k].R[pu[i],pu[i]]) : nothing
+			n_obj = length(game_obj.E[i])
+			for j = 1:n_obj
+				valid(stamp, N, p) ? add2sub(core.jac_sub[stamp], game_obj.E[i][j].cost[k].R[pu[i],pu[i]]) : nothing
+			end
 		end
 	end
 

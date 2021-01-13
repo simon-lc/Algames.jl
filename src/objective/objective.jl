@@ -4,7 +4,6 @@
 ################################################################################
 
 mutable struct GameObjective
-	p::Int                 # number of players
 	probsize::ProblemSize  # Problem Size
 	obj::Vector{Vector{Objective}} # objective of each player [number of players, number of obejctives]
 	E::Vector{Vector{Objective}}   # quadratic expansion of the objective of each player [number of players, number of obejctives]
@@ -32,7 +31,7 @@ function GameObjective(Q::Vector{DQ}, R::Vector{DR}, xf::Vector{SVx}, uf::Vector
 		obj[i][1] = Objective(cost, cost_term, N)
 		E[i][1] = Objective([LQRCost(1e-10*ones(n,n)+I, 1e-10*zeros(m,m)+I, zeros(MVector{n,T})) for k=1:N])
 	end
-	return GameObjective(p,probsize,obj,E)
+	return GameObjective(probsize,obj,E)
 end
 
 function expand_vector(v::AbstractVector{T}, inds::AbstractVector{Int}, n::Int) where {T}
@@ -42,7 +41,7 @@ function expand_vector(v::AbstractVector{T}, inds::AbstractVector{Int}, n::Int) 
 end
 
 function cost_gradient!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
-	p = game_obj.p
+	p = game_obj.probsize.p
 	for i = 1:p
 		n_obj = length(game_obj.E[i])
 		for j = 1:n_obj
@@ -53,7 +52,7 @@ function cost_gradient!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
 end
 
 function cost_hessian!(game_obj::GameObjective, pdtraj::PrimalDualTraj)
-	p = game_obj.p
+	p = game_obj.probsize.p
 	for i = 1:p
 		n_obj = length(game_obj.E[i])
 		for j = 1:n_obj
@@ -69,10 +68,11 @@ function add_collision_cost!(game_obj::GameObjective, radius::AbstractVector{T},
 	n = game_obj.probsize.n
 	m = game_obj.probsize.m
 	p = game_obj.probsize.p
+	px = game_obj.probsize.px
 	@assert p == length(radius) == length(μ)
  	for i = 1:p
 		for j ∈ setdiff(1:p,i)
-			obj = Objective(CollisionCost{n,m,T,length(model.px[i])}(μ[i], radius[i], model.px[i], model.px[j]), N)
+			obj = Objective(CollisionCost{n,m,T,length(px[i])}(μ[i], radius[i], px[i], px[j]), N)
 			E = Objective([LQRCost(1e-10*ones(n,n)+I, 1e-10*zeros(m,m)+I, zeros(MVector{n,T})) for k=1:N])
 			push!(game_obj.obj[i], obj)
 			push!(game_obj.E[i], E)
@@ -82,9 +82,6 @@ function add_collision_cost!(game_obj::GameObjective, radius::AbstractVector{T},
 end
 
 
-
-pdtraj = PrimalDualTraj(probsize, dt)
-@btime cost_hessian!(game_obj, pdtraj)
 
 
 ################################################################################
@@ -168,10 +165,10 @@ function Base.copy(c::CollisionCost)
     CollisionCost(copy(c.μ), copy(c.r), copy(c.pxi), copy(c.pxj), terminal=c.terminal)
 end
 
-function TrajectoryOPtimization.state_dim(cost::CollisionCost{n,m,T,ni}) where {n,m,T,ni}
+function TrajectoryOptimization.state_dim(cost::CollisionCost{n,m,T,ni}) where {n,m,T,ni}
 	return n
 end
 
-function TrajectoryOPtimization.control_dim(cost::CollisionCost{n,m,T,ni}) where {n,m,T,ni}
+function TrajectoryOptimization.control_dim(cost::CollisionCost{n,m,T,ni}) where {n,m,T,ni}
 	return m
 end

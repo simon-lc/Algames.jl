@@ -36,12 +36,12 @@
     pdtraj = PrimalDualTraj(probsize, dt, f=rand, amplitude=1e1)
     for i = 1:p
         for k = 1:N
-            game_obj.E[i].cost[k].Q += rand(n,n)
-            game_obj.E[i].cost[k].R += rand(m,m)
-            game_obj.E[i].cost[k].H += rand(m,n)
-            game_obj.E[i].cost[k].q += rand(n)
-            game_obj.E[i].cost[k].r += rand(m)
-            game_obj.E[i].cost[k].c += rand()
+            game_obj.E[i][1].cost[k].Q += rand(n,n)
+            game_obj.E[i][1].cost[k].R += rand(m,m)
+            game_obj.E[i][1].cost[k].H += rand(m,n)
+            game_obj.E[i][1].cost[k].q += rand(n)
+            game_obj.E[i][1].cost[k].r += rand(m)
+            game_obj.E[i][1].cost[k].c += rand()
         end
     end
     cost_gradient!(game_obj, pdtraj)
@@ -77,7 +77,7 @@
     xf = [i*ones(SVector{model.ni[i],T}) for i=1:p]
     uf = [2i*ones(SVector{model.mi[i],T}) for i=1:p]
 
-    game_obj = GameObjective333(Q,R,xf,uf,N,model)
+    game_obj = GameObjective(Q,R,xf,uf,N,model)
 
     radius = [1.0, 2.0, 3.0]
     μ = [10.0, 20.0, 30.0]
