@@ -27,7 +27,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	out = 0
     for k = 1:opts.outer_iter
 		out = k
-		plot_traj!(model, prob.pdtraj.pr)
+		# plot_traj!(model, prob.pdtraj.pr)
 		# Initialize regularization and failed line search count.
 		set!(opts.reg, opts.reg_0)
 		LS_count = 0
