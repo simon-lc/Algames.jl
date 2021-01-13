@@ -14,6 +14,8 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init)
 	init_traj!(prob.Δpdtraj; x0=prob.x0, f=zeros, amplitude=0.0)
 
+	rollout!(RK3, prob.model, prob.pdtraj.pr)
+	rollout!(RK3, prob.model, prob.pdtraj_trial.pr)
 	# Set the initial penalties
 	prob.pen.ρ = SVector{1,T}([opts.ρ_0])
 	prob.pen.ρ_trial = SVector{1,T}([opts.ρ_trial])
@@ -25,7 +27,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 	out = 0
     for k = 1:opts.outer_iter
 		out = k
-		# plot_traj!(model, prob.pdtraj.pr)
+		plot_traj!(model, prob.pdtraj.pr)
 		# Initialize regularization and failed line search count.
 		set!(opts.reg, opts.reg_0)
 		LS_count = 0

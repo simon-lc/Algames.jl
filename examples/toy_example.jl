@@ -6,6 +6,7 @@ T = Float64
 # Define the dynamics of the system
 p = 3 # Number of players
 model = UnicycleGame(p=p) # game with 3 players with unicycle dynamics
+model = BicycleGame(p=p) # game with 3 players with unicycle dynamics
 n = model.n
 m = model.m
 
@@ -28,12 +29,15 @@ xf = [SVector{model.ni[1],T}([2,+0.4,0,0]),
 uf = [zeros(SVector{model.mi[i],T}) for i=1:p]
 # Objectives of the game
 game_obj = GameObjective(Q,R,xf,uf,N,model)
+radius = 1.0*ones(p)
+μ = 5.0*ones(p)
+add_collision_cost!(game_obj, radius, μ)
 
 # Define the constraints that each player must respect
 game_con = GameConstraintValues(probsize)
 # Add collision avoidance
 radius = 0.05
-add_collision_avoidance!(game_con, probsize, radius)
+# add_collision_avoidance!(game_con, probsize, radius)
 # Add control bounds
 u_max =  5*ones(SVector{m,T})
 u_min = -5*ones(SVector{m,T})
@@ -60,13 +64,15 @@ opts = Options()
 opts.ls_iter = 15
 opts.outer_iter = 20
 opts.inner_iter = 20
-opts.reg_0 = 1e-3
+opts.ρ_0 = 1e0
+opts.reg_0 = 1e-8
 opts.α_dual = 1.0
 opts.λ_max = 1.0*1e7
 opts.ϵ_dyn = 1e-3
 opts.ϵ_sta = 1e-3
 opts.ϵ_con = 1e-3
 opts.ϵ_opt = 1e-3
+opts.regularize = true
 # Define the game problem
 prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 
@@ -74,13 +80,8 @@ prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 @time newton_solve!(prob)
 # @profiler newton_solve!(prob)
 
-plot_violation!(prob.stats)
-prob.pen
-prob.pdtraj.du[1][1]
-prob.game_con.state_conval[1][3].λ[10][1]
-prob.game_con.state_conval[1][1]
 plot_traj!(prob.model, prob.pdtraj.pr)
+plot_violation!(prob.stats)
 
 prob.stats.outer_iter
-# add constraint as a cost
 # kick out of inner loop if not progress made

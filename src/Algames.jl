@@ -7,7 +7,6 @@ using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
 using Parameters
-using Plots
 using Printf
 using Random
 using RobotDynamics
