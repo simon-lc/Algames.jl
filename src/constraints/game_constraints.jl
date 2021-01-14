@@ -3,7 +3,7 @@
 ################################################################################
 
 mutable struct GameConstraintValues{T}
-	p::Int
+	probsize::ProblemSize
 	α_dual::T
 	state_conlist::Vector{TrajectoryOptimization.AbstractConstraintSet}
 	control_conlist::TrajectoryOptimization.AbstractConstraintSet
@@ -21,13 +21,13 @@ function GameConstraintValues(probsize::ProblemSize)
 	control_conlist = ConstraintList(n,m,N)
 	state_conval = [Vector{TrajectoryOptimization.AbstractConstraintValues}() for i=1:p]
 	control_conval = Vector{TrajectoryOptimization.AbstractConstraintValues}()
-	return GameConstraintValues{typeof(α_dual)}(p, α_dual, state_conlist,
+	return GameConstraintValues{typeof(α_dual)}(probsize, α_dual, state_conlist,
 		control_conlist, state_conval, control_conval)
 end
 
 function set_constraint_params!(game_con::GameConstraintValues, opts::Options)
 	game_con.α_dual = opts.α_dual
-	for i = 1:game_con.p
+	for i = 1:game_con.probsize.p
 		for conval in game_con.state_conval[i]
 			conval.params.ϕ = opts.ρ_increase
 			conval.params.μ0 = opts.ρ_0

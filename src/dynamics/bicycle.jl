@@ -26,6 +26,7 @@ function BicycleGame(;p::Int=2, lf::T=0.05, lr::T=0.05) where {T}
 end
 
 @generated function RobotDynamics.dynamics(model::BicycleGame{N,M,P,lf,lr}, x, u) where {N,M,P,lf,lr}
+	# https://archit-rstg.medium.com/two-to-four-bicycle-model-for-car-898063e87074
 	# X = [x,y,v,ψ]
 	# U = [a,δ]
 	# β = atan(lr*tan(δ), lr+lf)

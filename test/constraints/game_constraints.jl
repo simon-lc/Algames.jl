@@ -5,16 +5,16 @@
     model = UnicycleGame(p=3)
     probsize = ProblemSize(N,model)
     game_con = GameConstraintValues(probsize)
-    @test game_con.p == model.p
+    @test game_con.probsize.p == model.p
     @test length(game_con.state_conlist) == model.p
 
     # Test set_constraint_params!
     T = Float64
     u_max =  rand(SVector{model.m,T})
     u_min = -rand(SVector{model.m,T})
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
     radius = 1.0
-    add_collision_avoidance!(game_con, probsize, radius)
+    add_collision_avoidance!(game_con, radius)
     opts = Options{T}()
     opts.ρ_increase = 2.0
     opts.ρ_0 = 3.0

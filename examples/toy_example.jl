@@ -37,19 +37,19 @@ add_collision_cost!(game_obj, radius, μ)
 game_con = GameConstraintValues(probsize)
 # Add collision avoidance
 radius = 0.05
-# add_collision_avoidance!(game_con, probsize, radius)
+# add_collision_avoidance!(game_con, radius)
 # Add control bounds
 u_max =  5*ones(SVector{m,T})
 u_min = -5*ones(SVector{m,T})
-add_control_bound!(game_con, probsize, u_max, u_min)
+add_control_bound!(game_con, u_max, u_min)
 # Add wall constraint
 walls = [Wall([-1.0,-1.75], [1.0,0.25], [1.,-1.]/sqrt(2))]
-add_wall_constraint!(game_con, probsize, walls)
+add_wall_constraint!(game_con, walls)
 # Add circle constraint
 xc = [1., 2., 3.]
 yc = [1., 2., 3.]
 radius = [0.1, 0.2, 0.3]
-add_circle_constraint!(game_con, probsize, xc, yc, radius)
+add_circle_constraint!(game_con, xc, yc, radius)
 
 # Define the initial state of the system
 x0 = SVector{model.n,T}([
@@ -85,3 +85,5 @@ plot_violation!(prob.stats)
 
 prob.stats.outer_iter
 # kick out of inner loop if not progress made
+# add probsize to game_con struct
+# add constructor for multiple radius of collision

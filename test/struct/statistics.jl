@@ -18,9 +18,9 @@
     game_con = GameConstraintValues(probsize)
     u_max =  0.1*ones(model.m)
     u_min = -0.1*ones(model.m)
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
     walls = [Wall([0.,1], [1,0], [1,1]/sqrt(2))]
-    add_wall_constraint!(game_con, probsize, walls)
+    add_wall_constraint!(game_con, walls)
     pdtraj = PrimalDualTraj(probsize, dt)
     core = NewtonCore(probsize)
     k = 2

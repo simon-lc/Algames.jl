@@ -148,16 +148,16 @@
     game_con = GameConstraintValues(probsize)
     # Add collision avoidance
     radius = 0.05
-    add_collision_avoidance!(game_con, probsize, radius)
+    add_collision_avoidance!(game_con, radius)
     # Add control bounds
     u_max =  1*ones(SVector{model.m,T})
     u_min = -1*ones(SVector{model.m,T})
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
     # Add circle constraint
     xc = [1.50, 0.2, 0.3]
     yc = [1.25, 0.2, 0.3]
     radius = [0.2, 0.2, 0.3]
-    add_circle_constraint!(game_con, probsize, xc, yc, radius)
+    add_circle_constraint!(game_con, xc, yc, radius)
 
     prob = GameProblem(N, dt, x0, model, opts, game_obj, game_con)
 

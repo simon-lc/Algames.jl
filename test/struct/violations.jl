@@ -20,7 +20,7 @@
     game_con = GameConstraintValues(probsize)
     u_max =  0.1*ones(model.m)
     u_min = -0.1*ones(model.m)
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
     init_traj!(pdtraj, x0=zeros(SVector{model.n,T}), f=ones, amplitude=1.0)
     con_vio = control_violation(game_con, pdtraj)
     @test con_vio.N == pdtraj.probsize.N
@@ -30,7 +30,7 @@
     # Test state violation
     game_con = GameConstraintValues(probsize)
     walls = [Wall([0.,1], [1,0], [1,1]/sqrt(2))]
-    add_wall_constraint!(game_con, probsize, walls)
+    add_wall_constraint!(game_con, walls)
     init_traj!(pdtraj, x0=zeros(SVector{model.n,T}), f=ones, amplitude=1.0)
     sta_vio = state_violation(game_con, pdtraj)
     @test sta_vio.N == pdtraj.probsize.N

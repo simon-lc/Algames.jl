@@ -2,32 +2,68 @@
 # Add Collision Avoidance
 ################################################################################
 
-function add_collision_avoidance!(game_con::GameConstraintValues,
-	probsize::ProblemSize, radius::T) where {T}
+function add_collision_avoidance!(game_con::GameConstraintValues, i::Int, j::Int, radius::T) where {T}
+	probsize = game_con.probsize
 	N = probsize.N
 	n = probsize.n
 	m = probsize.m
 	p = probsize.p
 	px = probsize.px
+
+	add_constraint!(game_con.state_conlist[i], CollisionConstraint(n,px[i],px[j],radius), 2:N)
+	con  = game_con.state_conlist[i].constraints[end]
+	inds = game_con.state_conlist[i].inds[end]
+	conval = Altro.ALConVal(n,m,con,inds)
+	push!(game_con.state_conval[i], conval)
+	return nothing
+end
+
+function add_collision_avoidance!(game_con::GameConstraintValues, radius::Vector{T}) where {T}
+	probsize = game_con.probsize
+	p = probsize.p
+	@assert p == length(radius)
 	for i = 1:p
 		for j in setdiff(1:p,i)
-			add_constraint!(game_con.state_conlist[i], CollisionConstraint(n,px[i],px[j],radius), 2:N)
-			con  = game_con.state_conlist[i].constraints[end]
-			inds = game_con.state_conlist[i].inds[end]
-			conval = Altro.ALConVal(n,m,con,inds)
-			push!(game_con.state_conval[i], conval)
+			ri = radius[i]
+			rj = radius[j]
+			add_collision_avoidance!(game_con, i, j, ri+rj)
 		end
 	end
 	return nothing
 end
+
+function add_collision_avoidance!(game_con::GameConstraintValues, radius::T) where {T}
+	p = game_con.probsize.p
+	add_collision_avoidance!(game_con, radius*ones(p))
+	return nothing
+end
+
+# function add_collision_avoidance!(game_con::GameConstraintValues,
+# 	probsize::ProblemSize, radius::T) where {T}
+# 	N = probsize.N
+# 	n = probsize.n
+# 	m = probsize.m
+# 	p = probsize.p
+# 	px = probsize.px
+# 	for i = 1:p
+# 		for j in setdiff(1:p,i)
+# 			add_constraint!(game_con.state_conlist[i], CollisionConstraint(n,px[i],px[j],radius), 2:N)
+# 			con  = game_con.state_conlist[i].constraints[end]
+# 			inds = game_con.state_conlist[i].inds[end]
+# 			conval = Altro.ALConVal(n,m,con,inds)
+# 			push!(game_con.state_conval[i], conval)
+# 		end
+# 	end
+# 	return nothing
+# end
 
 
 ################################################################################
 # Add Control Bounds
 ################################################################################
 
-function add_control_bound!(game_con::GameConstraintValues, probsize::ProblemSize,
-	u_max::AbstractVector, u_min::AbstractVector)
+function add_control_bound!(game_con::GameConstraintValues, u_max::AbstractVector, u_min::AbstractVector)
+	probsize = game_con.probsize
 	N = probsize.N
 	n = probsize.n
 	m = probsize.m
@@ -44,25 +80,55 @@ end
 # Add Circle Constraint
 ################################################################################
 
-function add_circle_constraint!(game_con::GameConstraintValues, probsize::ProblemSize,
+function add_circle_constraint!(game_con::GameConstraintValues, i::Int,
 	xc::AbstractVector, yc::AbstractVector, radius::AbstractVector)
+	probsize = game_con.probsize
 	N = probsize.N
 	n = probsize.n
 	m = probsize.m
 	p = probsize.p
 	px = probsize.px
+
+	add_constraint!(
+		game_con.state_conlist[i],
+		TrajectoryOptimization.CircleConstraint(n, xc, yc, radius, px[i][1], px[i][2]),
+		2:N)
+	con  = game_con.state_conlist[i].constraints[end]
+	inds = game_con.state_conlist[i].inds[end]
+	conval = Altro.ALConVal(n,m,con,inds)
+	push!(game_con.state_conval[i], conval)
+	return nothing
+end
+
+function add_circle_constraint!(game_con::GameConstraintValues,
+	xc::AbstractVector, yc::AbstractVector, radius::AbstractVector)
+	p = game_con.probsize.p
 	for i = 1:p
-		add_constraint!(
-			game_con.state_conlist[i],
-			TrajectoryOptimization.CircleConstraint(n, xc, yc, radius, px[i][1], px[i][2]),
-			2:N)
-		con  = game_con.state_conlist[i].constraints[end]
-		inds = game_con.state_conlist[i].inds[end]
-		conval = Altro.ALConVal(n,m,con,inds)
-		push!(game_con.state_conval[i], conval)
+		add_circle_constraint!(game_con, i, xc, yc, radius)
 	end
 	return nothing
 end
+
+# function add_circle_constraint!(game_con::GameConstraintValues,
+# 	xc::AbstractVector, yc::AbstractVector, radius::AbstractVector)
+# 	probsize = game_con.probsize
+# 	N = probsize.N
+# 	n = probsize.n
+# 	m = probsize.m
+# 	p = probsize.p
+# 	px = probsize.px
+# 	for i = 1:p
+# 		add_constraint!(
+# 			game_con.state_conlist[i],
+# 			TrajectoryOptimization.CircleConstraint(n, xc, yc, radius, px[i][1], px[i][2]),
+# 			2:N)
+# 		con  = game_con.state_conlist[i].constraints[end]
+# 		inds = game_con.state_conlist[i].inds[end]
+# 		conval = Altro.ALConVal(n,m,con,inds)
+# 		push!(game_con.state_conval[i], conval)
+# 	end
+# 	return nothing
+# end
 
 
 ################################################################################
@@ -75,8 +141,8 @@ mutable struct Wall
 	v::AbstractVector  # vector orthogonal to (p2 - p1) and indicating the forbiden halfspace
 end
 
-function add_wall_constraint!(game_con::GameConstraintValues, probsize::ProblemSize,
-	walls::AbstractVector{Wall})
+function add_wall_constraint!(game_con::GameConstraintValues, i::Int, walls::AbstractVector{Wall})
+	probsize = game_con.probsize
 	N = probsize.N
 	n = probsize.n
 	m = probsize.m
@@ -92,18 +158,54 @@ function add_wall_constraint!(game_con::GameConstraintValues, probsize::ProblemS
 	xv = SVector{n_wall,T}([wall.v[1] for wall in walls])
 	yv = SVector{n_wall,T}([wall.v[2] for wall in walls])
 
+	add_constraint!(
+		game_con.state_conlist[i],
+		WallConstraint(n, x1, y1, x2, y2, xv, yv, px[i][1], px[i][2]),
+		2:N)
+	con  = game_con.state_conlist[i].constraints[end]
+	inds = game_con.state_conlist[i].inds[end]
+	conval = Altro.ALConVal(n,m,con,inds)
+	push!(game_con.state_conval[i], conval)
+	return nothing
+end
+
+function add_wall_constraint!(game_con::GameConstraintValues, walls::AbstractVector{Wall})
+	p = game_con.probsize.p
 	for i = 1:p
-		add_constraint!(
-			game_con.state_conlist[i],
-			WallConstraint(n, x1, y1, x2, y2, xv, yv, px[i][1], px[i][2]),
-			2:N)
-		con  = game_con.state_conlist[i].constraints[end]
-		inds = game_con.state_conlist[i].inds[end]
-		conval = Altro.ALConVal(n,m,con,inds)
-		push!(game_con.state_conval[i], conval)
+		add_wall_constraint!(game_con, i, walls)
 	end
 	return nothing
 end
+
+# function add_wall_constraint!(game_con::GameConstraintValues, walls::AbstractVector{Wall})
+# 	probsize = game_con.probsize
+# 	N = probsize.N
+# 	n = probsize.n
+# 	m = probsize.m
+# 	p = probsize.p
+# 	px = probsize.px
+#
+# 	n_wall = length(walls)
+# 	T = eltype(walls[1].p1)
+# 	x1 = SVector{n_wall,T}([wall.p1[1] for wall in walls])
+# 	y1 = SVector{n_wall,T}([wall.p1[2] for wall in walls])
+# 	x2 = SVector{n_wall,T}([wall.p2[1] for wall in walls])
+# 	y2 = SVector{n_wall,T}([wall.p2[2] for wall in walls])
+# 	xv = SVector{n_wall,T}([wall.v[1] for wall in walls])
+# 	yv = SVector{n_wall,T}([wall.v[2] for wall in walls])
+#
+# 	for i = 1:p
+# 		add_constraint!(
+# 			game_con.state_conlist[i],
+# 			WallConstraint(n, x1, y1, x2, y2, xv, yv, px[i][1], px[i][2]),
+# 			2:N)
+# 		con  = game_con.state_conlist[i].constraints[end]
+# 		inds = game_con.state_conlist[i].inds[end]
+# 		conval = Altro.ALConVal(n,m,con,inds)
+# 		push!(game_con.state_conval[i], conval)
+# 	end
+# 	return nothing
+# end
 
 ################################################################################
 # Helpers
@@ -123,7 +225,7 @@ function reset!(game_con::GameConstraintValues)
 end
 
 function reset_duals!(game_con::GameConstraintValues)
-    p = game_con.p
+    p = game_con.probsize.p
     for i = 1:p
         for conval in game_con.state_conval[i]
             Altro.reset_duals!(conval)
@@ -137,7 +239,7 @@ function reset_duals!(game_con::GameConstraintValues)
 end
 
 function reset_penalties!(game_con::GameConstraintValues)
-    p = game_con.p
+    p = game_con.probsize.p
     for i = 1:p
         for conval in game_con.state_conval[i]
             Altro.reset_penalties!(conval)
@@ -151,7 +253,7 @@ function reset_penalties!(game_con::GameConstraintValues)
 end
 
 function penalty_update!(game_con::GameConstraintValues)
-    p = game_con.p
+    p = game_con.probsize.p
     for i = 1:p
         for conval in game_con.state_conval[i]
             Altro.penalty_update!(conval)
@@ -171,7 +273,7 @@ function penalty_update!(con::Altro.ALConVal)
 end
 
 function dual_update!(game_con::GameConstraintValues)
-    p = game_con.p
+    p = game_con.probsize.p
 	α_dual = game_con.α_dual
     for i = 1:p
         for conval in game_con.state_conval[i]
@@ -188,7 +290,7 @@ function dual_update!(game_con::GameConstraintValues)
 end
 
 function evaluate!(game_con::GameConstraintValues, traj::Traj)
-    p = game_con.p
+    p = game_con.probsize.p
     for i = 1:p
         for conval in game_con.state_conval[i]
             TrajectoryOptimization.evaluate!(conval, traj)
@@ -201,9 +303,9 @@ function evaluate!(game_con::GameConstraintValues, traj::Traj)
     return nothing
 end
 
-
-
-
+################################################################################
+# Dual Update
+################################################################################
 
 function dual_update!(conval::Altro.ALConVal, α_dual::T) where {T}
 	c = conval.vals

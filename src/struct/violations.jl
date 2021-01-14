@@ -73,7 +73,7 @@ end
 
 function state_violation(game_con::GameConstraintValues, pdtraj::PrimalDualTraj)
 	N = pdtraj.probsize.N
-	p = game_con.p
+	p = game_con.probsize.p
 	x_vio = StateViolation(N)
 	for i = 1:p
 		for conval in game_con.state_conval[i]

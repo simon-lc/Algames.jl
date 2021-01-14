@@ -11,7 +11,7 @@
 
     u_max =  ones(SVector{model.m,T})
     u_min = -ones(SVector{model.m,T})
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
 
     cval = game_con.control_conval[1]
     # Change the duals

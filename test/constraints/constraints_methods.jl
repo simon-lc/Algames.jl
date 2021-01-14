@@ -9,7 +9,7 @@
     probsize = ProblemSize(N,model)
     game_con = GameConstraintValues(probsize)
     radius = 1.0
-    add_collision_avoidance!(game_con, probsize, radius)
+    add_collision_avoidance!(game_con, radius)
 
     pu = model.pu
     @test game_con.state_conlist[1].constraints[1].x1 == pu[1]
@@ -40,7 +40,7 @@
     u_max =  10*ones(model.m)
     u_min[1] = -Inf
     u_max[1] =  Inf
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
 
     @test game_con.control_conlist.constraints[1].u_min == u_min
     @test game_con.control_conlist.constraints[1].u_max == u_max
@@ -59,7 +59,7 @@
     xc = SVector{P,T}([1.0, 2.0, 3.0, 4.0, 5.0])
     yc = SVector{P,T}([-1.0, -2.0, -3.0, -4.0, -5.0])
     radius = SVector{P,T}([0.1, 0.2, 0.3, 0.4, 0.5])
-    add_circle_constraint!(game_con, probsize, xc, yc, radius)
+    add_circle_constraint!(game_con, xc, yc, radius)
 
     @test game_con.state_conlist[1].constraints[1].xi == px[1][1]
     @test game_con.state_conlist[1].constraints[1].yi == px[1][2]
@@ -93,7 +93,7 @@
 
     con = WallConstraint(n,x1,y1,x2,y2,xv,yv,x,y)
     walls = [Wall([x1[j],y1[j]], [x2[j],y2[j]], [xv[j],yv[j]]) for j=1:P]
-    add_wall_constraint!(game_con, probsize, walls )
+    add_wall_constraint!(game_con, walls )
 
     @test game_con.state_conlist[1].constraints[1].x == px[1][1]
     @test game_con.state_conlist[1].constraints[1].y == px[1][2]
@@ -119,14 +119,14 @@
     # Add control constraint
     u_min = -10*ones(model.m)
     u_max =  10*ones(model.m)
-    add_control_bound!(game_con, probsize, u_max, u_min)
+    add_control_bound!(game_con, u_max, u_min)
 
     # Add state constraint
     P = 5
     xc = SVector{P,T}([1.0, 2.0, 3.0, 4.0, 5.0])
     yc = SVector{P,T}([-1.0, -2.0, -3.0, -4.0, -5.0])
     radius = SVector{P,T}([0.1, 0.2, 0.3, 0.4, 0.5])
-    add_circle_constraint!(game_con, probsize, xc, yc, radius)
+    add_circle_constraint!(game_con, xc, yc, radius)
 
     # Set constraint parameters
     opts = Options()
