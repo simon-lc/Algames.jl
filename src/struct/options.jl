@@ -98,4 +98,7 @@
 
 	"Displaying the outer step results."
 	outer_print::Bool=true
+
+	"Solver random seed."
+	seed::Int=100
 end
