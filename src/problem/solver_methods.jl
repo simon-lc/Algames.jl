@@ -10,8 +10,8 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 
 	# Set initial trajectory
 	Random.seed!(100)
-	init_traj!(prob.pdtraj; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init)
-	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init)
+	init_traj!(prob.pdtraj; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init, s=opts.shift)
+	init_traj!(prob.pdtraj_trial; x0=prob.x0, f=opts.f_init, amplitude=opts.amplitude_init, s=opts.shift)
 	init_traj!(prob.Δpdtraj; x0=prob.x0, f=zeros, amplitude=0.0)
 
 	rollout!(RK3, prob.model, prob.pdtraj.pr)

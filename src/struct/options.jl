@@ -13,6 +13,9 @@
 	"Initialization amplitude of the primal dual vector."
 	amplitude_init::T=1e-8
 
+	"Shift of the trajectory for the initial guess (useful for MPC, ususally, shift=1 in this case)."
+	shift::Int=2^10
+
 	# Regularization
 	"Regularization of the residual and residual Jacobian."
 	regularize::Bool=true

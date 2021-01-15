@@ -26,17 +26,34 @@ end
 # Methods
 ################################################################################
 
+# function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=1e-8*rand(SVector{n,T}),
+#     f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
+#     N = pdtraj.probsize.N
+#     p = pdtraj.probsize.p
+#
+#     for k = 1:N
+#         pdtraj.pr[k].z = amplitude*f(SVector{n+m,T})
+#     end
+#     for i = 1:p
+#         for k = 1:N-1
+#             pdtraj.du[i][k] = amplitude*f(SVector{n,T})
+#         end
+#     end
+#     RobotDynamics.set_state!(pdtraj.pr[1], x0)
+#     return nothing
+# end
+
 function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=1e-8*rand(SVector{n,T}),
-    f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
+    s::Int=2^10, f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
     N = pdtraj.probsize.N
     p = pdtraj.probsize.p
 
     for k = 1:N
-        pdtraj.pr[k].z = amplitude*f(SVector{n+m,T})
+        pdtraj.pr[k].z = (k+s<=N) ? pdtraj.pr[k+s].z : amplitude*f(SVector{n+m,T})
     end
     for i = 1:p
         for k = 1:N-1
-            pdtraj.du[i][k] = amplitude*f(SVector{n,T})
+            pdtraj.du[i][k] = (k+s<=N-1) ? pdtraj.du[i][k+s] : amplitude*f(SVector{n,T})
         end
     end
     RobotDynamics.set_state!(pdtraj.pr[1], x0)
