@@ -1,5 +1,6 @@
 [deps]
 Altro = "5dcf52e5-e2fb-48e0-b826-96f46d2e3e73"
+Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -14,6 +15,7 @@ TrajectoryOptimization = "c79d492b-0548-5874-b488-5a62c1d9d0ca"
 
 [compat]
 Altro = "0.3"
+Arpack = "0.5"
 BenchmarkTools = "0.5"
 ForwardDiff = "0.10"
 Parameters = "0.12"

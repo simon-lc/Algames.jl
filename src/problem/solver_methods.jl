@@ -22,7 +22,7 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 
 	# Reset Statistics and constraints
 	reset!(prob.stats)
-	reset!(game_con)
+	opts.dual_reset ? reset!(game_con) : nothing
 	# Iterative solve
 	out = 0
     for k = 1:opts.outer_iter
@@ -51,7 +51,12 @@ function newton_solve!(prob::GameProblem{KN,n,m,T,SVd,SVx}) where {KN,n,m,T,SVd,
 		end
 		# Dual Ascent
 		evaluate!(game_con, prob.pdtraj.pr)
+		# k != 0 ? unbalance_dual!(prob.colmult, prob.game_con) : nothing
 		dual_update!(game_con)
+		# residual2!(prob, prob.pdtraj)
+		# get_collision_multiplier!(prob.colmult, game_con)
+		# get_balance!(prob.colmult, game_con, prob.pdtraj)
+		# balance_dual!(prob.colmult, prob.game_con)
 		# Increasing Schedule
 		prob.pen.ρ = min.(prob.pen.ρ * opts.ρ_increase, opts.ρ_max)
 		penalty_update!(game_con)
@@ -63,15 +68,14 @@ end
 function inner_iteration(prob::GameProblem, LS_count::Int, k::Int, l::Int)
 	core = prob.core
 	opts = prob.opts
+	# plot_traj!(prob.model, prob.pdtraj.pr)
 
 	# Residual
 	residual!(prob, prob.pdtraj)
 	opts.regularize ? regularize_residual!(core, opts, prob.pdtraj, prob.pdtraj) : nothing # should do nothing since we regularize around pdtraj
 	record!(prob.stats, prob.core, prob.model, prob.game_con, prob.pdtraj, k)
 	res_norm = norm(core.res, 1)/length(core.res)
-	# if res_norm <= 10^-(4 + 4*k/opts.outer_iter)
-	# 	return LS_count, :break
-	# end
+
 	if prob.stats.opt_vio[end].max < opts.ϵ_opt
 		return LS_count, :break
 	end

@@ -58,8 +58,11 @@
 	"Maximum Lagrange multiplier."
 	λ_max::T=1e7
 
-	"Dual ascent step size."
+	"Control Dual ascent step size for all players."
 	α_dual::T=1e0
+
+	"State Dual ascent step size for each player."
+	αx_dual::Vector{T}=ones(10)
 
 	# Constraint satisfaction criterion
 	"Dynamics constraint satisfaction criterion."
@@ -101,4 +104,7 @@
 
 	"Solver random seed."
 	seed::Int=100
+
+	"Reseting the duals."
+	dual_reset::Bool=true
 end

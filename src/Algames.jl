@@ -3,6 +3,7 @@ module Algames
 greet() = print("Hello World!")
 
 using Altro
+using Arpack
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
@@ -143,6 +144,7 @@ include("constraints/control_bound_constraint.jl")
 include("constraints/wall_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
+include("constraints/collision_multiplier.jl")
 
 # Struct
 include("struct/violations.jl")

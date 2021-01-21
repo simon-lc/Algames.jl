@@ -2,14 +2,15 @@
 # Trajectory Plot
 ################################################################################
 
-function plot_traj!(model::AbstractGameModel, traj::Traj)
-    plt = plot(aspect_ratio=:equal)
+function plot_traj!(model::AbstractGameModel, traj::Traj; plt=plot())
+    plot!(plt, aspect_ratio=:equal)
     N = length(traj)
+	c = [:orange, :cornflowerblue, :forestgreen, :red, :black, :pink]
     for i = 1:model.p
         xi = [state(traj[k])[model.pz[i][1]] for k=1:N]
         yi = [state(traj[k])[model.pz[i][2]] for k=1:N]
-        plot!(xi, yi)
-        scatter!(xi, yi)
+        plot!(xi, yi, color=c[i%6])
+        scatter!(xi, yi, color=c[i%6])
     end
     display(plt)
     return nothing
@@ -19,8 +20,8 @@ end
 # Constraint Violation Plot
 ################################################################################
 
-function plot_violation!(stats::Statistics; lw::T=5.0) where {T}
-	plt = plot(
+function plot_violation!(stats::Statistics; plt=plot(), lw::T=5.0) where {T}
+	plot!(plt,
 		size=(500,500),
 		layout=(1,1,))
     iter = stats.iter
@@ -37,10 +38,10 @@ function plot_violation!(stats::Statistics; lw::T=5.0) where {T}
 		ylabel="log(cons. vio.)",
 		title="Constraint Violation")
 	# Add curves
-	plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft)
-	plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft)
-	plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft)
-	plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft)
+	plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft, color=:green)
+	plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft, color=:blue)
+	plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft, color=:orange)
+	plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft, color=:red)
 	# Add rectangles
 	plot_epochs!(plt, y_min, y_max, stats.outer_iter)
 
