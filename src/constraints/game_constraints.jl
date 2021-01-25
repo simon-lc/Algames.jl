@@ -6,6 +6,7 @@ mutable struct GameConstraintValues{T}
 	probsize::ProblemSize
 	α_dual::T
 	αx_dual::Vector{T}
+	active_set_tolerance::T
 	state_conlist::Vector{TrajectoryOptimization.AbstractConstraintSet}
 	control_conlist::TrajectoryOptimization.AbstractConstraintSet
 	state_conval::Vector{Vector{TrajectoryOptimization.AbstractConstraintValues}}
@@ -19,11 +20,13 @@ function GameConstraintValues(probsize::ProblemSize)
 	p = probsize.p
 	α_dual = 1.0
 	αx_dual = ones(p)
+	active_set_tolerance = 0.0
 	state_conlist = [ConstraintList(n,m,N) for i=1:p]
 	control_conlist = ConstraintList(n,m,N)
 	state_conval = [Vector{TrajectoryOptimization.AbstractConstraintValues}() for i=1:p]
 	control_conval = Vector{TrajectoryOptimization.AbstractConstraintValues}()
-	return GameConstraintValues{typeof(α_dual)}(probsize, α_dual, αx_dual, state_conlist,
+	return GameConstraintValues{typeof(α_dual)}(probsize, α_dual, αx_dual,
+		active_set_tolerance, state_conlist,
 		control_conlist, state_conval, control_conval)
 end
 
@@ -31,6 +34,7 @@ function set_constraint_params!(game_con::GameConstraintValues, opts::Options)
 	p = game_con.probsize.p
 	game_con.α_dual = opts.α_dual
 	game_con.αx_dual = opts.αx_dual[1:p]
+	game_con.active_set_tolerance = opts.active_set_tolerance
 	for i = 1:game_con.probsize.p
 		for conval in game_con.state_conval[i]
 			conval.params.ϕ = opts.ρ_increase

@@ -28,6 +28,12 @@ mutable struct VStamp <: AbstractStamp
 	v1::Int      # value of the variable
 end
 
+mutable struct HStamp <: AbstractStamp
+	n2::Symbol   # name of the variable
+	i2::Int      # index of the variable
+	v2::Int      # value of the variable
+end
+
 ################################################################################
 # Base functions
 ################################################################################
@@ -38,6 +44,7 @@ import Base.isequal
 
 Base.hash(stamp::Stamp, h::UInt)  = hash(stamp.prob, hash(stamp.i0, hash(stamp.n1, hash(stamp.i1, hash(stamp.v1, hash(stamp.n2, hash(stamp.i2, hash(stamp.v2, h))))))))
 Base.hash(stamp::VStamp, h::UInt) = hash(stamp.prob, hash(stamp.i0, hash(stamp.n1, hash(stamp.i1, hash(stamp.v1, h)))))
+Base.hash(stamp::HStamp, h::UInt) = hash(stamp.n2, hash(stamp.i2, hash(stamp.v2, h)))
 
 function (==)(stamp1::AbstractStamp, stamp2::AbstractStamp)
     out = true
@@ -66,8 +73,17 @@ function (==)(stamp1::VStamp, stamp2::VStamp)
     return out
 end
 
+function (==)(stamp1::HStamp, stamp2::HStamp)
+    out = true
+	for name in HStamp.name.names
+        out &= getfield(stamp1, name) == getfield(stamp2, name)
+    end
+    return out
+end
+
 Base.isequal(stamp1::Stamp, stamp2::Stamp) = stamp1 == stamp2
 Base.isequal(stamp1::VStamp, stamp2::VStamp) = stamp1 == stamp2
+Base.isequal(stamp1::HStamp, stamp2::HStamp) = stamp1 == stamp2
 
 ################################################################################
 # Methods
@@ -79,6 +95,10 @@ end
 
 function VStamp()
 	return VStamp(:x, 0, :x, 0, 0)
+end
+
+function HStamp()
+	return HStamp(:x, 0, 0)
 end
 
 function stampify(name::Symbol, step::Int)
@@ -124,6 +144,19 @@ function stampify!(stamp::VStamp, prob::Symbol, ind_p::Int, name_i::Symbol, ind_
 	stamp.n1 = name_i
 	stamp.i1 = ind_i
 	stamp.v1 = step_i
+	return nothing
+end
+
+function stampify(name_j::Symbol, ind_j::Int, step_j::Int)
+	name_j, step_j = stampify(name_j, step_j)
+	return HStamp(name_j, ind_j, step_j)
+end
+
+function stampify!(stamp::HStamp, name_j::Symbol, ind_j::Int, step_j::Int)
+	name_j, step_j = stampify(name_j, step_j)
+	stamp.n2 = name_j
+	stamp.i2 = ind_j
+	stamp.v2 = step_j
 	return nothing
 end
 
@@ -177,4 +210,20 @@ function valid(prob::Symbol, i0::Int, n1::Symbol, i1::Int, v1::Int, N::Int, p::I
 		end
 	end
 	return b1
+end
+
+function valid(s::HStamp, N::Int, p::Int)
+	return valid(s.n2, s.i2, s.v2, N, p)
+end
+
+function valid(n2::Symbol, i2::Int, v2::Int, N::Int, p::Int)
+	b2 = false # stamp 2 is valid
+	if n2 == :u && i2 ∈ (1:p) && v2 ∈ (1:N-1) # uj1, ...N-1
+		b2 = true
+	elseif n2 == :λ && i2 == i0 && v2 ∈ (1:N-1) # λi1 ...N-1
+		b2 = true
+	elseif n2 == :x && i2 == 1 && v2 ∈ (2:N) # x2...xN
+		b2 = true
+	end
+	return b2
 end

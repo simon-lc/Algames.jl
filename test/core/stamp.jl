@@ -75,6 +75,11 @@
     vstamp3 = VStamp(:opt, 2, :x, 1, 3)
     @test vstamp1 == vstamp2
     @test !(vstamp1 == vstamp3)
+    hstamp1 = HStamp()
+    hstamp2 = HStamp()
+    hstamp3 = HStamp(:x, 1, 3)
+    @test hstamp1 == hstamp2
+    @test !(hstamp1 == hstamp3)
 
     # Test Stampify
     stamp0 = stampify(:opt, 1, :x_1, 1, 6, :λ, 1, 3)
@@ -90,5 +95,10 @@
     vstamp1 = stampify(:opt, 1, :x, 1, 5)
     stampify!(vstamp0, :opt, 1, :x, 1, 5)
     @test vstamp0 == vstamp1
+
+    hstamp0 = HStamp()
+    hstamp1 = stampify(:x, 1, 5)
+    stampify!(hstamp0, :x, 1, 5)
+    @test hstamp0 == hstamp1
 
 end

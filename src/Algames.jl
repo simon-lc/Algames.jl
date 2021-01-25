@@ -35,6 +35,7 @@ export
     init_traj!,
     update_traj!,
     set_traj!,
+    get_traj!,
     Δ_step,
     Statistics,
     record!,
@@ -64,6 +65,8 @@ export
     penalty_update!,
     dual_update!,
     evaluate!,
+    jacobian!,
+    update_active_set!,
     constraint_jacobian_residual!,
     constraint_residual!
 
@@ -78,8 +81,9 @@ export
     residual_views,
     jacobian_views,
     dynamics_indices,
-    VStamp,
     Stamp,
+    VStamp,
+    HStamp,
     stampify,
     stampify!,
     valid
@@ -114,6 +118,25 @@ export
     inner_iteration,
     line_search
 
+# Active Set
+export
+    NullSpace,
+    add_matrix!,
+    ActiveSetCore,
+    complete_vertical_indices,
+    complete_horizontal_indices,
+    horizontal_idx,
+    vertical_idx,
+    complete_residual_views,
+    complete_jacobian_views,
+    CStamp,
+    active,
+    active_vertical_mask!,
+    active_horizontal_mask!,
+    get_collision_conval,
+    update_nullspace!
+
+
 # Plots
 export
     plot_traj!,
@@ -144,7 +167,7 @@ include("constraints/control_bound_constraint.jl")
 include("constraints/wall_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
-include("constraints/collision_multiplier.jl")
+# include("constraints/collision_multiplier.jl")
 
 # Struct
 include("struct/violations.jl")
@@ -161,6 +184,11 @@ include("problem/solver_methods.jl")
 
 # Constraints
 include("constraints/constraint_derivatives.jl")
+
+# Equilibrium Subspace
+include("equilibrium_subspace/active_set_stamp.jl")
+include("equilibrium_subspace/active_set_core.jl")
+include("equilibrium_subspace/active_set_methods.jl")
 
 # Plots
 include("plots/solver_plots.jl")

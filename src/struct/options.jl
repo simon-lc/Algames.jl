@@ -64,6 +64,9 @@
 	"State Dual ascent step size for each player."
 	αx_dual::Vector{T}=ones(10)
 
+	"Active set tolerance."
+	active_set_tolerance::T=1e-4
+
 	# Constraint satisfaction criterion
 	"Dynamics constraint satisfaction criterion."
 	ϵ_dyn::T=1e-3

@@ -7,7 +7,7 @@ T = Float64
 # Define the dynamics of the system
 p = 3 # Number of players
 # model = DoubleIntegratorGame(p=p) # game with 3 players with unicycle dynamics
-# model = UnicycleGame(p=p) # game with 3 players with unicycle dynamics
+model = UnicycleGame(p=p) # game with 3 players with unicycle dynamics
 model = BicycleGame(p=p) # game with 3 players with unicycle dynamics
 n = model.n
 m = model.m
@@ -95,168 +95,210 @@ prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 plot_traj!(prob.model, prob.pdtraj.pr)
 plot_violation!(prob.stats)
 
-function subspace_animation(prob::GameProblem)
-    p = prob.probsize.p
-    prob.opts.inner_print = false
-    prob.opts.outer_print = false
-    span = -0.3:0.15:0.2
-    S = vcat([[ exp.(log(10)*[x,y]) for y in span] for x in span]...)
 
-    plt = plot(legend=false)
 
-    anim = @animate for s in S
-        prob.opts.αx_dual = [sqrt(s[1]), sqrt(s[2]), 1.0/(sqrt(s[1]*s[2]))]
-        set_constraint_params!(prob.game_con, prob.opts)
-        newton_solve!(prob)
-        plot_traj!(prob.model, prob.pdtraj.pr, plt=plt)
-        @show mean(abs.(prob.stats.opt_vio[end].vio))
+function update_λ!(ascore::ActiveSetCore, prob::GameProblem, Δλcol::AbstractVector)
+    probsize = prob.probsize
+    N = probsize.N
+    p = probsize.p
+    px = probsize.px
+
+
+    stamp = CStamp()
+    for i = 1:p
+        for j ∈ setdiff(1:p,i)
+            conval, v = get_collision_conval(prob.game_con, i, j)
+            if v
+                for (l,k) in enumerate(conval.inds)
+                    stampify!(stamp, :h, :col, i, j, k)
+                    if conval.active[l][1] == 1
+                        conval.λ[l] += Δλcol[horizontal_idx(ascore, stamp) .- probsize.S]
+                        conval.λ[l] = max.(0, conval.λ[l])
+                    end
+                end
+            end
+        end
     end
-    path = joinpath("~/Documents/p3_subspace_uni.gif")
-    gif(anim, path, fps = 10)
     return nothing
 end
 
-subspace_animation(prob)
-
-
-prob.stats.opt_vio[end]
-
-
-
-
-
-
-function kkt_residual(prob::GameProblem)
-    residual!(prob, prob.pdtraj)
-    col_res = collision_residual(prob)
-    kkt_res = vcat(prob.core.res, col_res)
-    return kkt_res
-end
-
-function collision_residual(prob::GameProblem)
+function subspace_dimension(prob::GameProblem; α::T=2e-3) where {T}
+    prob_ = deepcopy(prob)
     probsize = prob.probsize
-    N = probsize.N
-    p = probsize.p
-    px = probsize.px
-    n_col = Int(p*(p-1)/2)
-    col_res = zeros((N-1)*n_col)
-
-    off = 1
-    for k = 2:N #fix for correct indexing
-        for i = 1:p
-            for j = i+1:p
-                ind = findfirst(x -> all(x.con.x2 .== px[j]), prob.game_con.state_conval[i])
-                conval = prob.game_con.state_conval[i][ind]
-                col_res[off] = conval.vals[k-1][1]
-                off += 1
-            end
-        end
-    end
-    return col_res
-end
-
-
-function kkt_residual_jacobian(prob::GameProblem)
-    probsize = prob.probsize
-    N = probsize.N
-    p = probsize.p
-    px = probsize.px
-    n_col = Int(p*(p-1)/2)
-    n_λ = p*(p-1)
-    n_res = length(prob.core.res)
-
-    residual_jacobian!(prob, prob.pdtraj)
-    kkt_jac = spzeros(n_res + (N-1)*n_col, n_res + (N-1)*n_λ)
-    kkt_jac[1:n_res, 1:n_res] .= prob.core.jac
-    off = 1
-    for k = 2:N
-        for i = 1:p
-            stamp = stampify(:opt, i, :x, 1, k)
-            vind = prob.core.verti_inds[stamp]
-            for j ∈ setdiff(1:p,i)
-                ind = findfirst(x -> all(x.con.x2 .== px[j]), prob.game_con.state_conval[i])
-                conval = prob.game_con.state_conval[i][ind]
-                hind = n_res + off
-                kkt_jac[vind, hind:hind] .= conval.jac[k-1]'
-                off += 1
-            end
-        end
-    end
-
-    off = 1
-    for k = 2:N
-        for i = 1:p
-            hind = prob.core.horiz_inds[:x][1][k]
-            for j = i+1:p
-                ind = findfirst(x -> all(x.con.x2 .== px[j]), prob.game_con.state_conval[i])
-                conval = prob.game_con.state_conval[i][ind]
-                vind = n_res + off
-                kkt_jac[vind:vind, hind] .= conval.jac[k-1]
-                off += 1
-            end
-        end
-    end
-    return kkt_jac
-end
-
-
-function display_nullspace(prob_; M::Int=5, amplitude::T=1e-3, atol::T=1e-10) where {T}
-    kkt_jac = kkt_residual_jacobian(prob_)
-    kkt_jac = Matrix(kkt_jac)
-    n_res = length(prob_.core.res)
-    ns = nullspace(kkt_jac, atol=atol)
-    @show size(ns)
-    n_vec = size(ns)[2]
-    nv = ns[:,rand(1:n_vec)]
-    nv = nv./mean(abs.(nv))*amplitude
+    ascore = ActiveSetCore(probsize)
+    update_nullspace!(ascore, prob, prob.pdtraj)
+    ns = length(ascore.null.vec)
+    val = 0
+    subspace = Vector{PrimalDualTraj}([deepcopy(prob.pdtraj)])
     plt = plot(legend=false)
-    anim = @animate for k = 1:M
-        prob = deepcopy(prob_)
-        residual!(prob)
-        @show mean(abs.(prob.core.res))
-        Δtraj = nv[1:n_res]
-        Δλcol = nv[n_res+1:end]
-        set_traj!(prob.core, prob.Δpdtraj, Δtraj)
-        update_traj!(prob.pdtraj, prob.pdtraj, 1.0, prob.Δpdtraj)
-        update_λcol!(prob, Δλcol)
-        prob.opts.shift = 0
-        prob.opts.α_dual = 0.0
-        prob.opts.αx_dual = zeros(p)
-        # newton_solve!(prob)
-        # @show mean(abs.(Δtraj))
-        # @show mean(abs.(Δλcol))
-        plot_traj!(prob.model, prob.pdtraj.pr, plt=plt)
-    end
-    path = joinpath("~/Documents/nullspace_p3_din.gif")
-    gif(anim, path, fps = 10)
-    return nothing
-end
+    anim = @animate for l = 1:ns
+        prob_ = deepcopy(prob)
+        prob_.opts.shift = 0
+        prob_.opts.α_dual = 0.0
+        prob_.opts.αx_dual = 1e-2*ones(p)
+        # prob_.opts.αx_dual = 0.0*ones(p)
+        prob_.opts.dual_reset = false
+        prob_.opts.ρ_0 = prob_.pen.ρ[1]
+        prob_.opts.ρ_max = prob_.pen.ρ[1]
+        prob_.opts.inner_print = false
+        prob_.opts.outer_print = false
+        prob_.opts.inner_iter = 20
+        # prob_.opts.inner_iter = 20
+        prob_.opts.outer_iter = 20
+        # prob_.opts.outer_iter = 3
+        prob_.opts.reg_0 = 1e-5
+        # ϵ = 1e-6
+        ϵ = 1e-5
+        prob_.opts.ϵ_opt = ϵ
+        prob_.opts.ϵ_dyn = ϵ
+        prob_.opts.ϵ_con = ϵ
+        prob_.opts.ϵ_sta = ϵ
+        residual!(prob_)
+        set_traj!(prob_.core, prob_.Δpdtraj, α*ascore.null.Δtraj[l])
+        update_traj!(prob.pdtraj, prob_.pdtraj, 1.0, prob_.Δpdtraj)
+        update_λ!(ascore, prob_, α*ascore.null.Δλ[l])
+        newton_solve!(prob_)
+        plot_violation!(prob_.stats)
 
-# evaluate!(prob.game_con, prob.pdtraj.pr)
-# collision_residual(prob)
-# kkt_residual(prob)
-# kkt_jac = kkt_residual_jacobian(prob)
-# ns = nullspace(Matrix(kkt_jac), atol=1e-10)
-# nv = ns[:,1]
-function update_λcol!(prob::GameProblem, Δλcol)
-    probsize = prob.probsize
-    N = probsize.N
-    p = probsize.p
-    px = probsize.px
-    off = 1
-    for k = 2:N
-        for i = 1:p
-            for j ∈ setdiff(1:p,i)
-                ind = findfirst(x -> all(x.con.x2 .== px[j]), prob.game_con.state_conval[i])
-                conval = prob.game_con.state_conval[i][ind]
-                conval.λ[k-1][1] += Δλcol[off]
-                # conval.λ[k-1][1] = max(0, conval.λ[i][1])
-                off += 1
-            end
+        opt = mean(abs.(prob_.stats.opt_vio[end].vio))
+        sta = mean(abs.(prob_.stats.sta_vio[end].vio))
+        dyn = mean(abs.(prob_.stats.dyn_vio[end].vio))
+        con = mean(abs.(prob_.stats.con_vio[end].vio))
+        opts = prob_.opts
+        if opt < opts.ϵ_opt && sta < opts.ϵ_sta && dyn < opts.ϵ_dyn && con < opts.ϵ_con
+            val += 1
+            plot_traj!(prob_.model, prob_.pdtraj.pr, plt=plt)
+            push!(subspace, deepcopy(prob_.pdtraj))
         end
     end
+    @show ns
+    @show val
+    path = joinpath("~/Documents/nullspace_dim_p3_$(string(typeof(model).name)).gif")
+    gif(anim, path, fps = 10)
+    return ascore, subspace
+end
+
+
+function pca(prob::GameProblem, subspace::Vector{PrimalDualTraj})
+    probsize = prob.probsize
+    N = probsize.N
+    n = probsize.n
+    m = probsize.m
+    p = probsize.p
+    px = probsize.px
+    S = probsize.S
+    M = length(subspace)-1
+
+    V = []
+    v = zeros(S)
+    v_ref = zeros(S)
+    get_traj!(prob.core, subspace[1], v_ref)
+    for k = 1:M
+        get_traj!(prob.core, subspace[k+1], v)
+        v = v - v_ref
+        push!(V, deepcopy(v))
+    end
+
+
+    # R = (N-1)*(n+m)
+    pr_mask = primals_mask(prob.core, probsize)
+    R = length(pr_mask)
+    W = [v[pr_mask] for v in V]
+    # W = [v[1:S] for v in V]
+    m = sum(W) ./ M
+    Wc = [w .- m for w in W]
+    cov = sum([wc*wc' for wc in Wc])/M
+    vecs = eigvecs(cov)
+    vals = eigvals(cov)
+    eigs = [(vecs[:,i], vals[i]) for i=1:R]
+    # eigs = [(vecs[:,i], vals[i]) for i=1:S]
+    sort!(eigs, by = x -> x[2], rev=true)
+    vecs = [e[1] for e in eigs[1:M]]
+    vals = [e[2] for e in eigs[1:M]]
+
+    @show round.(log.(10, abs.(vals)), digits=3)
+
+
+    plt = plot(legend=false)
+    pdtraj_ref = subspace[1]
+    plot_traj!(prob.model, pdtraj_ref.pr, plt=plt)
+
+    pdtraj_1 = deepcopy(pdtraj_ref)
+    v1 = zeros(S)
+    v1[pr_mask] = vecs[1]
+    set_traj!(prob.core, pdtraj_1, v1)
+
+    pdtraj_2 = deepcopy(pdtraj_ref)
+    v2 = zeros(S)
+    v2[pr_mask] = vecs[2]
+    set_traj!(prob.core, pdtraj_2, v2)
+
+    pdtraj_3 = deepcopy(pdtraj_ref)
+    v3 = zeros(S)
+    v3[pr_mask] = vecs[3]
+    set_traj!(prob.core, pdtraj_3, v3)
+
+    x = [[state(pdtraj_ref.pr[k])[px[i][1]] for k=2:N] for i=1:p]
+    y = [[state(pdtraj_ref.pr[k])[px[i][2]] for k=2:N] for i=1:p]
+    u1 = [[state(pdtraj_1.pr[k])[px[i][1]]  for k=2:N] for i=1:p]
+    v1 = [[state(pdtraj_1.pr[k])[px[i][2]]  for k=2:N] for i=1:p]
+    u2 = [[state(pdtraj_2.pr[k])[px[i][1]]  for k=2:N] for i=1:p]
+    v2 = [[state(pdtraj_2.pr[k])[px[i][2]]  for k=2:N] for i=1:p]
+    u3 = [[state(pdtraj_3.pr[k])[px[i][1]]  for k=2:N] for i=1:p]
+    v3 = [[state(pdtraj_3.pr[k])[px[i][2]]  for k=2:N] for i=1:p]
+    β = 2.0
+    for i = 1:p
+        quiver!(x[i],y[i],quiver=(β*u1[i],β*v1[i]), linewidth=1.5, color=:cyan)
+        quiver!(x[i],y[i],quiver=(β*u2[i],β*v2[i]), linewidth=1.5, color=:red)
+        quiver!(x[i],y[i],quiver=(β*u3[i],β*v3[i]), linewidth=1.5, color=:black)
+    end
+    # y = rand(1:10,N)
+    # u = rand(N)
+    # v = rand(N)
+    # scatter(x,y)
+
+    display(plt)
+
+    return vals, pdtraj_1
+end
+
+function primals_mask(core::NewtonCore, probsize::ProblemSize)
+    N = probsize.N
+    inds = Vector{Int}()
+    stamp = HStamp()
+    for k = 1:N-1
+        # States
+        stampify!(stamp, :x, 1, k+1)
+        ind = horizontal_idx(core, stamp)
+        inds = vcat(inds, Vector(ind))
+        # Controls
+        for i = 1:p
+            stampify!(stamp, :u, i, k)
+            ind = horizontal_idx(core, stamp)
+            inds = vcat(inds, Vector(ind))
+        end
+    end
+    return inds
+end
+
+function display_eigvals(vals)
+    plt = plot(legend=false)
+    plot!(vals,
+        linetype=:steppost,
+        linewidth=3.0,
+        title="PCA on the Nash Equilibrium subspace \n around a nominal NE trajectory.",
+        xlabel="eigval_index",
+        ylabel="eigval_magnitude")
+    display(plt)
     return nothing
 end
 
 prob_copy = deepcopy(prob)
-display_nullspace(prob_copy, amplitude=1e-3)
+# ascore, subspace = subspace_dimension(prob_copy, α=4e-3) # Unicycle, # Bicycle
+subspace
+vals, pdtraj_1 = pca(prob, subspace)
+display_eigvals(vals)
+
+pdtraj_1
+
+pr_mask = primals_mask(prob.core, probsize)

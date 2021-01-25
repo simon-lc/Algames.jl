@@ -39,7 +39,7 @@ include("constraints/wall_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
 include("constraints/constraint_derivatives.jl")
-include("constraints/collision_multiplier.jl")
+# include("constraints/collision_multiplier.jl")
 
 # Objective
 include("objective/objective.jl")
@@ -50,6 +50,10 @@ include("problem/local_quantities.jl")
 include("problem/global_quantities.jl")
 include("problem/solver_methods.jl")
 
+# Equilibrium Subspace
+include("equilibrium_subspace/active_set_stamp.jl")
+include("equilibrium_subspace/active_set_core.jl")
+include("equilibrium_subspace/active_set_methods.jl")
 
 # Plots
 include("plots/solver_plots.jl")

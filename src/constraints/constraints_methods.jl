@@ -231,6 +231,41 @@ function evaluate!(game_con::GameConstraintValues, traj::Traj)
     end
     return nothing
 end
+import RobotDynamics.jacobian!
+function jacobian!(game_con::GameConstraintValues, traj::Traj)
+    p = game_con.probsize.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            TrajectoryOptimization.jacobian!(conval, traj)
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        TrajectoryOptimization.jacobian!(conval, traj)
+    end
+    return nothing
+end
+
+function update_active_set!(game_con::GameConstraintValues, traj::Traj)
+	evaluate!(game_con, traj)
+	update_active_set!(game_con)
+    return nothing
+end
+
+
+function update_active_set!(game_con::GameConstraintValues)
+    p = game_con.probsize.p
+    for i = 1:p
+        for conval in game_con.state_conval[i]
+            Altro.update_active_set!(conval, Altro.Val(game_con.active_set_tolerance))
+        end
+    end
+    # Control constraints
+    for conval in game_con.control_conval
+        Altro.update_active_set!(conval, Altro.Val(game_con.active_set_tolerance))
+    end
+    return nothing
+end
 
 ################################################################################
 # Dual Update

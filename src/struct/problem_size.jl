@@ -12,9 +12,14 @@ mutable struct ProblemSize{SVu,SVx,SVz}
     pu::SVu
     px::SVx
     pz::SVz
+    S::Int
 end
 
 function ProblemSize(N::Int, model::AbstractGameModel)
+    n = model.n
+    m = model.m
+    p = model.p
+    S = n*p*(N-1) + m*(N-1) + n*(N-1)
     return ProblemSize(
         N,
         model.n,
@@ -25,6 +30,7 @@ function ProblemSize(N::Int, model::AbstractGameModel)
         model.pu,
         model.px,
         model.pz,
+        S
         )
 end
 

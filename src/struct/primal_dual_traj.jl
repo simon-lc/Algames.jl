@@ -26,23 +26,6 @@ end
 # Methods
 ################################################################################
 
-# function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=1e-8*rand(SVector{n,T}),
-#     f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
-#     N = pdtraj.probsize.N
-#     p = pdtraj.probsize.p
-#
-#     for k = 1:N
-#         pdtraj.pr[k].z = amplitude*f(SVector{n+m,T})
-#     end
-#     for i = 1:p
-#         for k = 1:N-1
-#             pdtraj.du[i][k] = amplitude*f(SVector{n,T})
-#         end
-#     end
-#     RobotDynamics.set_state!(pdtraj.pr[1], x0)
-#     return nothing
-# end
-
 function init_traj!(pdtraj::PrimalDualTraj{KN,n,m,T,SVd}; x0=1e-8*rand(SVector{n,T}),
     s::Int=2^10, f=rand, amplitude=1e-8) where {KN,n,m,T,SVd}
     N = pdtraj.probsize.N
@@ -67,21 +50,56 @@ function set_traj!(core::NewtonCore, Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd},
     pu = core.probsize.pu
     # Primals
     indu = zeros(Int,m)
+	stamp = HStamp()
     for k = 1:N-1
         # States
-        ind = horizontal_idx(core, :x, 1, k+1)
+		stampify!(stamp, :x, 1, k+1)
+        ind = horizontal_idx(core, stamp)
         RobotDynamics.set_state!(Δpdtraj.pr[k+1], Δtraj[ind])
         # Controls
         for i = 1:p
-            indu[pu[i]] = horizontal_idx(core, :u, i, k)
+			stampify!(stamp, :u, i, k)
+            indu[pu[i]] = horizontal_idx(core, stamp)
         end
         RobotDynamics.set_control!(Δpdtraj.pr[k], Δtraj[indu])
     end
     # Duals
     for i = 1:p
         for k = 1:N-1
-            ind = horizontal_idx(core, :λ, i, k)
+			stampify!(stamp, :λ, i, k)
+            ind = horizontal_idx(core, stamp)
             Δpdtraj.du[i][k] = Δtraj[ind]
+        end
+    end
+    return nothing
+end
+
+function get_traj!(core::NewtonCore, Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd},
+    Δtraj::AbstractVector) where {KN,n,m,T,SVd}
+    N = core.probsize.N
+    p = core.probsize.p
+    pu = core.probsize.pu
+    # Primals
+	indu = zeros(Int,m)
+	stamp = HStamp()
+	for k = 1:N-1
+		# States
+		stampify!(stamp, :x, 1, k+1)
+		ind = horizontal_idx(core, stamp)
+		Δtraj[ind] = state(Δpdtraj.pr[k+1])
+        # Controls
+        for i = 1:p
+			stampify!(stamp, :u, i, k)
+            indu[pu[i]] = horizontal_idx(core, stamp)
+        end
+        Δtraj[indu] = control(Δpdtraj.pr[k])
+    end
+    # Duals
+    for i = 1:p
+        for k = 1:N-1
+			stampify!(stamp, :λ, i, k)
+            ind = horizontal_idx(core, stamp)
+            Δtraj[ind] = Δpdtraj.du[i][k]
         end
     end
     return nothing

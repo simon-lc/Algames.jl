@@ -50,17 +50,38 @@
     set_traj!(core, Δpdtraj, Δtraj)
 
     @test state(Δpdtraj.pr[1]) == x0
-    @test state(Δpdtraj.pr[2]) == Δtraj[horizontal_idx(core, :x, 1, 2)]
-    @test state(Δpdtraj.pr[end]) == Δtraj[horizontal_idx(core, :x, 1, N)]
-    @test control(Δpdtraj.pr[1])[model.pu[1]] == Δtraj[horizontal_idx(core, :u, 1, 1)]
-    @test control(Δpdtraj.pr[1])[model.pu[2]] == Δtraj[horizontal_idx(core, :u, 2, 1)]
-    @test control(Δpdtraj.pr[2])[model.pu[1]] == Δtraj[horizontal_idx(core, :u, 1, 2)]
-    @test control(Δpdtraj.pr[2])[model.pu[2]] == Δtraj[horizontal_idx(core, :u, 2, 2)]
-    @test control(Δpdtraj.pr[2])[model.pu[3]] == Δtraj[horizontal_idx(core, :u, 3, 2)]
-    @test control(Δpdtraj.pr[end-1])[model.pu[1]] == Δtraj[horizontal_idx(core, :u, 1, N-1)]
-    @test Δpdtraj.du[1][1] == Δtraj[horizontal_idx(core, :λ, 1, 1)]
-    @test Δpdtraj.du[1][end] == Δtraj[horizontal_idx(core, :λ, 1, N-1)]
-    @test Δpdtraj.du[end][end] == Δtraj[horizontal_idx(core, :λ, 3, N-1)]
+    @test state(Δpdtraj.pr[2]) == Δtraj[horizontal_idx(core, stampify(:x, 1, 2))]
+    @test state(Δpdtraj.pr[end]) == Δtraj[horizontal_idx(core, stampify(:x, 1, N))]
+    @test control(Δpdtraj.pr[1])[model.pu[1]] == Δtraj[horizontal_idx(core, stampify(:u, 1, 1))]
+    @test control(Δpdtraj.pr[1])[model.pu[2]] == Δtraj[horizontal_idx(core, stampify(:u, 2, 1))]
+    @test control(Δpdtraj.pr[2])[model.pu[1]] == Δtraj[horizontal_idx(core, stampify(:u, 1, 2))]
+    @test control(Δpdtraj.pr[2])[model.pu[2]] == Δtraj[horizontal_idx(core, stampify(:u, 2, 2))]
+    @test control(Δpdtraj.pr[2])[model.pu[3]] == Δtraj[horizontal_idx(core, stampify(:u, 3, 2))]
+    @test control(Δpdtraj.pr[end-1])[model.pu[1]] == Δtraj[horizontal_idx(core, stampify(:u, 1, N-1))]
+    @test Δpdtraj.du[1][1] == Δtraj[horizontal_idx(core, stampify(:λ, 1, 1))]
+    @test Δpdtraj.du[1][end] == Δtraj[horizontal_idx(core, stampify(:λ, 1, N-1))]
+    @test Δpdtraj.du[end][end] == Δtraj[horizontal_idx(core, stampify(:λ, 3, N-1))]
+
+    # Test get_traj!
+    N = 10
+    dt = 0.1
+    p = 3
+    model = UnicycleGame(p=p)
+    probsize = ProblemSize(n,model)
+    core = NewtonCore(probsize)
+    Δpdtraj = PrimalDualTraj(probsize, dt)
+    Δtraj0 = rand(probsize.S)
+    Δtraj1 = deepcopy(Δtraj0)
+    Δtraj2 = deepcopy(Δtraj0)
+
+    get_traj!(core, Δpdtraj, Δtraj0)
+    Δtraj0
+    Δtraj1
+
+    @test !(Δtraj0 == Δtraj1)
+    set_traj!(core, Δpdtraj, Δtraj1)
+    get_traj!(core, Δpdtraj, Δtraj0)
+    @test Δtraj0 == Δtraj1
 
     # Test update_traj!
     n = model.n
