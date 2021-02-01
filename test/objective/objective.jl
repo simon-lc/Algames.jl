@@ -115,6 +115,15 @@
     pxj = SVector{length(model.px[2]),Int}(model.px[2])
     cs = CollisionCost{model.n,model.m,T,length(model.px[1])}(μ,r,pxi,pxj)
 
+    cs0 = copy(cs)
+    @test cs0.μ == cs.μ
+    @test cs0.r == cs.r
+    @test cs0.terminal == cs.terminal
+    @test all(cs0.pxi .== cs.pxi)
+    @test all(cs0.pxj .== cs.pxj)
+    @test state_dim(cs) == model.n
+    @test control_dim(cs) == model.m
+
     @test cs.μ == μ
     @test cs.r == r
     @test cs.pxi == pxi
@@ -144,11 +153,11 @@
 
     # Test Gradient
     function easy_gradient(cs, z)
-    	function local_eval(x)
-    		z_ = KnotPoint(x, control(z), z.dt)
-    		return TrajectoryOptimization.stage_cost(cs,state(z_))
-    	end
-    	return ForwardDiff.gradient(local_eval, state(z))
+        function local_eval(x)
+            z_ = KnotPoint(x, control(z), z.dt)
+            return TrajectoryOptimization.stage_cost(cs,state(z_))
+        end
+        return ForwardDiff.gradient(local_eval, state(z))
     end
 
     zr = KnotPoint(rand(SVector{model.n,T}), rand(SVector{model.m,T}), dt)
@@ -171,11 +180,11 @@
 
     # Test Hessian
     function easy_hessian(cs, z)
-    	function local_eval(x)
-    		z_ = KnotPoint(x, control(z), z.dt)
-    		return TrajectoryOptimization.stage_cost(cs,state(z_))
-    	end
-    	return ForwardDiff.hessian(local_eval, state(z))
+        function local_eval(x)
+            z_ = KnotPoint(x, control(z), z.dt)
+            return TrajectoryOptimization.stage_cost(cs,state(z_))
+        end
+        return ForwardDiff.hessian(local_eval, state(z))
     end
 
     TrajectoryOptimization.hessian!(E,cs_active,state(zr))
@@ -193,6 +202,5 @@
 
     @test (@ballocated TrajectoryOptimization.hessian!($E, $cs, $x)) == 0
     @test (@ballocated TrajectoryOptimization.hessian!($E, $cs, $x, $u)) == 0
-
 
 end

@@ -24,4 +24,17 @@
     # Test Residual Jacobian
     residual_jacobian!(prob)
 
+    # Test scn
+    @test scn(1234.0) == " 1.2e+3"
+    @test scn(-1234.0) == "-1.2e+3"
+    @test scn(-0.1234) == "-1.2e-1"
+    @test scn( 0.1234) == " 1.2e-1"
+    @test scn(0) == " 0.0e+0"
+    @test scn(-0) == " 0.0e+0"
+    @test scn(0, digits=3) == " 0.000e+0"
+    @test scn(1234, digits=3) == " 1.234e+3"
+    @test scn(1234, digits=0) == " 1e+3"
+    @test_throws AssertionError scn(1234, digits=-1) == " 1e+3"
+
+
 end

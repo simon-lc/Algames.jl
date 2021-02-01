@@ -3,7 +3,6 @@ module Algames
 greet() = print("Hello World!")
 
 using Altro
-using Arpack
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
@@ -15,11 +14,6 @@ using SparseArrays
 using StaticArrays
 using TrajectoryOptimization
 
-export
-    vec_add!,
-    vec_sub!,
-    VecPair
-
 # Dynamics
 export
     AbstractGameModel,
@@ -30,6 +24,7 @@ export
 
 # Struct
 export
+    Options,
     ProblemSize,
     PrimalDualTraj,
     init_traj!,
@@ -47,10 +42,14 @@ export
     StateViolation,
     state_violation,
     OptimalityViolation,
-    optimality_violation
+    optimality_violation,
+    Regularizer,
+    set!,
+    mult!
 
 # Constraints
 export
+    GameConstraintValues,
     ControlBoundConstraint,
     WallConstraint,
     add_collision_avoidance!,
@@ -64,6 +63,7 @@ export
     reset_penalties!,
     penalty_update!,
     dual_update!,
+    dual_update,
     evaluate!,
     jacobian!,
     update_active_set!,
@@ -99,11 +99,6 @@ export
 # Problem
 export
     Penalty,
-    Regularizer,
-    set!,
-    mult!,
-    Options,
-    GameConstraintValues,
     GameProblem,
     residual!,
     residual_jacobian!,
@@ -112,6 +107,7 @@ export
     add2sub,
     addI2sub,
     sparse_zero!,
+    scn,
     dynamics_residual,
     ∇dynamics!,
     newton_solve!,
@@ -125,8 +121,6 @@ export
     ActiveSetCore,
     complete_vertical_indices,
     complete_horizontal_indices,
-    horizontal_idx,
-    vertical_idx,
     complete_residual_views,
     complete_jacobian_views,
     CStamp,
@@ -185,10 +179,10 @@ include("problem/solver_methods.jl")
 # Constraints
 include("constraints/constraint_derivatives.jl")
 
-# Equilibrium Subspace
-include("equilibrium_subspace/active_set_stamp.jl")
-include("equilibrium_subspace/active_set_core.jl")
-include("equilibrium_subspace/active_set_methods.jl")
+# Active Set
+include("active_set/active_set_stamp.jl")
+include("active_set/active_set_core.jl")
+include("active_set/active_set_methods.jl")
 
 # Plots
 include("plots/solver_plots.jl")

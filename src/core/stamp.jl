@@ -220,7 +220,7 @@ function valid(n2::Symbol, i2::Int, v2::Int, N::Int, p::Int)
 	b2 = false # stamp 2 is valid
 	if n2 == :u && i2 ∈ (1:p) && v2 ∈ (1:N-1) # uj1, ...N-1
 		b2 = true
-	elseif n2 == :λ && i2 == i0 && v2 ∈ (1:N-1) # λi1 ...N-1
+	elseif n2 == :λ && i2 ∈ (1:p) && v2 ∈ (1:N-1) # λi1 ...N-1
 		b2 = true
 	elseif n2 == :x && i2 == 1 && v2 ∈ (2:N) # x2...xN
 		b2 = true

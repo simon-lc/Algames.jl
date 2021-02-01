@@ -88,38 +88,6 @@ function horizontal_indices(probsize::ProblemSize)
 	return horiz_inds
 end
 
-# function horizontal_indices(probsize::ProblemSize)
-# 	N = probsize.N
-# 	n = probsize.n
-# 	p = probsize.p
-# 	mi = probsize.mi
-#
-# 	horiz_inds = Dict()
-# 	horiz_inds[:x] = Dict()
-# 	horiz_inds[:u] = Dict()
-# 	horiz_inds[:λ] = Dict()
-# 	horiz_inds[:x][1] = Dict()
-# 	for i = 1:p
-# 		horiz_inds[:u][i] = Dict()
-# 		horiz_inds[:λ][i] = Dict()
-# 	end
-#
-# 	off = 0
-# 	for k = 1:N-1
-# 		horiz_inds[:x][1][k+1] = SVector{n,Int}(off .+ (1:n))
-# 		off += n
-# 		for i = 1:p
-# 			horiz_inds[:u][i][k] = SVector{mi[i],Int}(off .+ (1:mi[i]))
-# 			off += mi[i]
-# 		end
-# 		for i = 1:p
-# 			horiz_inds[:λ][i][k] = SVector{n,Int}(off .+ (1:n))
-# 			off += n
-# 		end
-# 	end
-# 	return horiz_inds
-# end
-
 function idx(core::NewtonCore, stamp::Stamp)
 	vstamp = stampify(stamp.prob, stamp.i0, stamp.n1, stamp.i1, stamp.v1)
 	hstamp = stampify(stamp.n2, stamp.i2, stamp.v2)
@@ -134,17 +102,8 @@ function idx(verti_inds::Dict, horiz_inds::Dict, stamp::Stamp)
 	hstamp = stampify(stamp.n2, stamp.i2, stamp.v2)
 	verti = verti_inds[vstamp]
 	horiz = horiz_inds[hstamp]
-	# horiz = horiz_inds[stamp.n2][stamp.i2][stamp.v2]
 	return (verti, horiz)
 end
-
-# function horizontal_idx(core::NewtonCore, n2::Symbol, i2::Int, v2::Int)
-# 	return core.horiz_inds[n2][i2][v2]
-# end
-#
-# function horizontal_idx(horiz_inds::Dict, n2::Symbol, i2::Int, v2::Int)
-# 	return horiz_inds[n2][i2][v2]
-# end
 
 function horizontal_idx(core::NewtonCore, stamp::HStamp)
 	return core.horiz_inds[stamp]

@@ -102,5 +102,11 @@
     probsize = ProblemSize(N,model)
     core = NewtonCore(probsize)
     @test typeof(core) <: NewtonCore
+    hstamp = stampify(:u, 2, 1)
+    vstamp = stampify(:opt, 2, :u, 2, 1)
+    stamp = stampify(:opt, 2, :u, 2, 1, :u, 2, 1)
+    @test core.horiz_inds[hstamp] == horizontal_idx(core, hstamp)
+    @test core.verti_inds[vstamp] == vertical_idx(core, vstamp)
+    @test all((core.verti_inds[vstamp], core.horiz_inds[hstamp]) .== idx(core, stamp))
 
 end

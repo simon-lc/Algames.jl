@@ -3,6 +3,8 @@
     using Test
     N = 10
     p = 3
+
+
     vstamp1 = VStamp(:opt, 1, :x, 1, 5)
     @test valid(vstamp1,N,p)
 
@@ -35,6 +37,44 @@
 
     vstamp1 = VStamp(:opt, 2, :u, 2, 4)
     @test valid(vstamp1,N,p)
+
+
+    hstamp = HStamp()
+    @test !valid(hstamp, N, p)
+
+    hstamp1 = HStamp(:u, 2, 3)
+    @test valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:u, 0, 3)
+    @test !valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:u, 1, 100)
+    @test !valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:x, 2, 2)
+    @test !valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:x, 1, 1)
+    @test !valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:x, 1, 2)
+    @test valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:λ, 1, 2)
+    @test valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:λ, 1, 2)
+    @test valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:λ, 0, 2)
+    @test !valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:λ, 2, 4)
+    @test valid(hstamp1,N,p)
+
+    hstamp1 = HStamp(:λ, 2, 40)
+    @test !valid(hstamp1,N,p)
+
 
     stamp1 = Stamp(:opt, 1, :x, 1, 5, :x, 1, 3)
     @test valid(stamp1,N,p)
@@ -95,10 +135,14 @@
     vstamp1 = stampify(:opt, 1, :x, 1, 5)
     stampify!(vstamp0, :opt, 1, :x, 1, 5)
     @test vstamp0 == vstamp1
+    @test isequal(vstamp0, vstamp1)
 
     hstamp0 = HStamp()
     hstamp1 = stampify(:x, 1, 5)
     stampify!(hstamp0, :x, 1, 5)
     @test hstamp0 == hstamp1
+    @test isequal(hstamp0, hstamp1)
+
+    @test !isequal(vstamp0, hstamp1)
 
 end

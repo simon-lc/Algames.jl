@@ -161,8 +161,8 @@ function TrajectoryOptimization.hessian!(E::TrajectoryOptimization.QuadraticCost
 end
 
 import Base.copy
-function Base.copy(c::CollisionCost)
-    CollisionCost(copy(c.μ), copy(c.r), copy(c.pxi), copy(c.pxj), terminal=c.terminal)
+function Base.copy(c::CollisionCost{n,m,T,ni}) where {n,m,T,ni}
+    CollisionCost{n,m,T,ni}(copy(c.μ), copy(c.r), copy(c.pxi), copy(c.pxj), terminal=c.terminal)
 end
 
 function TrajectoryOptimization.state_dim(cost::CollisionCost{n,m,T,ni}) where {n,m,T,ni}

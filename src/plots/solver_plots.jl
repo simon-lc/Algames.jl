@@ -2,17 +2,17 @@
 # Trajectory Plot
 ################################################################################
 
-function plot_traj!(model::AbstractGameModel, traj::Traj; plt=plot())
-    plot!(plt, aspect_ratio=:equal)
+function plot_traj!(model::AbstractGameModel, traj::Traj; plt=Plots.plot())
+    Plots.plot!(plt, aspect_ratio=:equal)
     N = length(traj)
 	c = [:orange, :cornflowerblue, :forestgreen, :red, :black, :pink]
     for i = 1:model.p
         xi = [state(traj[k])[model.pz[i][1]] for k=1:N]
         yi = [state(traj[k])[model.pz[i][2]] for k=1:N]
-        plot!(xi, yi, color=c[i%6])
-        scatter!(xi, yi, color=c[i%6])
+        Plots.plot!(xi, yi, color=c[i%6])
+        Plots.scatter!(xi, yi, color=c[i%6])
     end
-    display(plt)
+    Plots.display(plt)
     return nothing
 end
 
@@ -20,8 +20,8 @@ end
 # Constraint Violation Plot
 ################################################################################
 
-function plot_violation!(stats::Statistics; plt=plot(), lw::T=5.0) where {T}
-	plot!(plt,
+function plot_violation!(stats::Statistics; plt=Plots.plot(), lw::T=5.0) where {T}
+	Plots.plot!(plt,
 		size=(500,500),
 		layout=(1,1,))
     iter = stats.iter
@@ -32,20 +32,20 @@ function plot_violation!(stats::Statistics; plt=plot(), lw::T=5.0) where {T}
 	y_min = minimum([dyn; con; sta; opt])
 	y_max = maximum([dyn; con; sta; opt])
 	# Set up plot
-	plot!(plt[1,1],
+	Plots.plot!(plt[1,1],
 		legend=:bottomleft,
 		xlabel="Outer Loop Iterations",
 		ylabel="log(cons. vio.)",
 		title="Constraint Violation")
 	# Add curves
-	plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft, color=:green)
-	plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft, color=:blue)
-	plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft, color=:orange)
-	plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft, color=:red)
+	Plots.plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft, color=:green)
+	Plots.plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft, color=:blue)
+	Plots.plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft, color=:orange)
+	Plots.plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft, color=:red)
 	# Add rectangles
 	plot_epochs!(plt, y_min, y_max, stats.outer_iter)
 
-    display(plt)
+    Plots.display(plt)
     return nothing
 end
 
@@ -55,7 +55,7 @@ function plot_epochs!(plt, y_min::T, y_max::T, epochs::Vector{Int}) where {T}
 	i_end = -1
 	for k = 1:epochs[end]
 		i_end = findlast(x -> x==k, epochs )
-		plot!(rectangle(i_end-i_start,y_max-y_min,i_start,y_min), opacity=.1, label=false)
+		Plots.plot!(rectangle(i_end-i_start,y_max-y_min,i_start,y_min), opacity=.1, label=false)
 		i_start = i_end + 1
 	end
 	return nothing
