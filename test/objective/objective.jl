@@ -167,12 +167,12 @@
 
     TrajectoryOptimization.gradient!(E,cs_active,state(zr))
     grad_x = easy_gradient(cs_active, zr)
-    @test norm(E.q - grad_x, 1)/norm(E.q) < 1e-8
+    @test norm(E.q - grad_x, 1)/norm(E.q) < 1e-7
     @test E.r == zeros(model.m)
 
     TrajectoryOptimization.gradient!(E,cs_notactive,state(zr))
     grad_x = easy_gradient(cs_notactive, zr)
-    @test norm(E.q - grad_x, 1) < 1e-8
+    @test norm(E.q - grad_x, 1) < 1e-7
     @test E.r == zeros(model.m)
 
     @test (@ballocated TrajectoryOptimization.gradient!($E, $cs, $x)) == 0
