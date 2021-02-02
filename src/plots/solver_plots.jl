@@ -2,17 +2,16 @@
 # Trajectory Plot
 ################################################################################
 
-function Algames.plot_traj!(model::AbstractGameModel, traj::Traj; plt=Plots.plot())
-    Plots.plot!(plt, aspect_ratio=:equal)
+function plot_traj!(model::AbstractGameModel, traj::Algames.Traj; plt=plot())
+    plot!(plt, legend=false, aspect_ratio=:equal)
     N = length(traj)
-	c = [:orange, :cornflowerblue, :forestgreen, :red, :black, :pink]
     for i = 1:model.p
-        xi = [state(traj[k])[model.pz[i][1]] for k=1:N]
-        yi = [state(traj[k])[model.pz[i][2]] for k=1:N]
-        Plots.plot!(xi, yi, color=c[i%6])
-        Plots.scatter!(xi, yi, color=c[i%6])
+        xi = [Algames.state(traj[k])[model.pz[i][1]] for k=1:N]
+        yi = [Algames.state(traj[k])[model.pz[i][2]] for k=1:N]
+        plot!(xi, yi, label=false)
+        scatter!(xi, yi)
     end
-    Plots.display(plt)
+    display(plt)
     return nothing
 end
 
@@ -20,8 +19,8 @@ end
 # Constraint Violation Plot
 ################################################################################
 
-function Algames.plot_violation!(stats::Algames.Statistics; plt=Plots.plot(), lw::T=5.0) where {T}
-	Plots.plot!(plt,
+function plot_violation!(stats::Statistics; plt=plot(), lw::T=5.0) where {T}
+	plot!(plt,
 		size=(500,500),
 		layout=(1,1,))
     iter = stats.iter
@@ -32,30 +31,30 @@ function Algames.plot_violation!(stats::Algames.Statistics; plt=Plots.plot(), lw
 	y_min = minimum([dyn; con; sta; opt])
 	y_max = maximum([dyn; con; sta; opt])
 	# Set up plot
-	Plots.plot!(plt[1,1],
+	plot!(plt[1,1],
 		legend=:bottomleft,
 		xlabel="Outer Loop Iterations",
 		ylabel="log(cons. vio.)",
 		title="Constraint Violation")
 	# Add curves
-	Plots.plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft, color=:green)
-	Plots.plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft, color=:blue)
-	Plots.plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft, color=:orange)
-	Plots.plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft, color=:red)
+	plot!(plt[1,1], dyn, linewidth=lw, label="dyn", legend=:bottomleft)
+	plot!(plt[1,1], con, linewidth=lw, label="con", legend=:bottomleft)
+	plot!(plt[1,1], sta, linewidth=lw, label="sta", legend=:bottomleft)
+	plot!(plt[1,1], opt, linewidth=lw, label="opt", legend=:bottomleft)
 	# Add rectangles
-	Algames.plot_epochs!(plt, y_min, y_max, stats.outer_iter)
+	plot_epochs!(plt, y_min, y_max, stats.outer_iter)
 
-    Plots.display(plt)
+    display(plt)
     return nothing
 end
 
-function Algames.plot_epochs!(plt, y_min::T, y_max::T, epochs::Vector{Int}) where {T}
+function plot_epochs!(plt, y_min::T, y_max::T, epochs::Vector{Int}) where {T}
 	rectangle(w, h, x, y) = Shape(x .+ [0,w,w,0], y .+ [0,0,h,h])
 	i_start = 1
 	i_end = -1
 	for k = 1:epochs[end]
 		i_end = findlast(x -> x==k, epochs )
-		Plots.plot!(rectangle(i_end-i_start,y_max-y_min,i_start,y_min), opacity=.1, label=false)
+		plot!(rectangle(i_end-i_start,y_max-y_min,i_start,y_min), opacity=.1, label=false)
 		i_start = i_end + 1
 	end
 	return nothing
