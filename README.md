@@ -12,9 +12,10 @@ Pkg.add("Algames")
 ## Related Paper
 [RSS 2020](http://www.roboticsproceedings.org/rss16/p091.pdf)
 
-## Autonomous Robots paper submission: 
+## Autonomous Robots paper submission:
 The experiments are available [here](https://github.com/simon-lc/AlgamesDriving.jl/releases/tag/autonomous_robots_v1.0).
 
 ## Quick Start
 To run a simple example of a dynamic game see script in /examples/intro_example.jl. For autonomous driving examples see [AlgamesDriving.jl](https://github.com/simon-lc/AlgamesDriving.jl).
 
+![alt text](https://github.com/simon-lc/Algames.jl/blob/master/readme_banner.jpeg?raw=true)
