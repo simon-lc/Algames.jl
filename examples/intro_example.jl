@@ -1,11 +1,14 @@
 ################################################################################
-# Toy Example
+# Intro Example
 ################################################################################
+using Algames
+using StaticArrays
+using LinearAlgebra
+
 T = Float64
 
 # Define the dynamics of the system
 p = 3 # Number of players
-model = UnicycleGame(p=p) # game with 3 players with unicycle dynamics
 model = BicycleGame(p=p) # game with 3 players with unicycle dynamics
 n = model.n
 m = model.m
@@ -23,7 +26,6 @@ R = [Diagonal(0.1*ones(SVector{model.mi[i],T})) for i=1:p] # Quadratic control c
 xf = [SVector{model.ni[1],T}([2,+0.4,0,0]),
       SVector{model.ni[2],T}([2, 0.0,0,0]),
       SVector{model.ni[3],T}([3,-0.4,0,0]),
-      # SVector{model.ni[4],T}([3,+0.8,0,0]),
       ]
 # Desired control
 uf = [zeros(SVector{model.mi[i],T}) for i=1:p]
@@ -36,14 +38,14 @@ add_collision_cost!(game_obj, radius, μ)
 # Define the constraints that each player must respect
 game_con = GameConstraintValues(probsize)
 # Add collision avoidance
-radius = 0.05
-# add_collision_avoidance!(game_con, radius)
+radius = 0.08
+add_collision_avoidance!(game_con, radius)
 # Add control bounds
 u_max =  5*ones(SVector{m,T})
 u_min = -5*ones(SVector{m,T})
 add_control_bound!(game_con, u_max, u_min)
 # Add wall constraint
-walls = [Wall([-1.0,-1.75], [1.0,0.25], [1.,-1.]/sqrt(2))]
+walls = [Wall([0.0,-0.4], [1.0,-0.4], [0.,-1.])]
 add_wall_constraint!(game_con, walls)
 # Add circle constraint
 xc = [1., 2., 3.]
@@ -53,37 +55,20 @@ add_circle_constraint!(game_con, xc, yc, radius)
 
 # Define the initial state of the system
 x0 = SVector{model.n,T}([
-    0.0, 0.0, 0.5, #0.0,
-   -0.4, 0.0, 0.7, #0.6,
-    0.0, 0.0, 0.0, #0.0,
-    0.0, 0.0, 0.0, #0.0,
+    0.1, 0.0, 0.5,
+   -0.4, 0.0, 0.7,
+    0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0,
     ])
 
 # Define the Options of the solver
 opts = Options()
-opts.ls_iter = 15
-opts.outer_iter = 20
-opts.inner_iter = 20
-opts.ρ_0 = 1e0
-opts.reg_0 = 1e-8
-opts.α_dual = 1.0
-opts.λ_max = 1.0*1e7
-opts.ϵ_dyn = 1e-3
-opts.ϵ_sta = 1e-3
-opts.ϵ_con = 1e-3
-opts.ϵ_opt = 1e-3
-opts.regularize = true
 # Define the game problem
 prob = GameProblem(N,dt,x0,model,opts,game_obj,game_con)
 
 # Solve the problem
 @time newton_solve!(prob)
-# @profiler newton_solve!(prob)
 
-plot_traj!(prob.model, prob.pdtraj.pr)
-plot_violation!(prob.stats)
-
-prob.stats.outer_iter
-# kick out of inner loop if not progress made
-# add probsize to game_con struct
-# add constructor for multiple radius of collision
+# Visualize the Results
+Algames.plot_traj!(prob.model, prob.pdtraj.pr)
+Algames.plot_violation!(prob.stats)
