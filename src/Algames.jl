@@ -1,5 +1,9 @@
 module Algames
 
+Pkg.add(Pkg.PackageSpec(;name="RobotDynamics", version="0.3.1"))
+Pkg.add(Pkg.PackageSpec(;name="TrajectoryOptimization", version="0.4.1"))
+Pkg.add(Pkg.PackageSpec(;name="Altro", version="0.3.0"))
+
 greet() = print("Hello World!")
 
 using Altro
