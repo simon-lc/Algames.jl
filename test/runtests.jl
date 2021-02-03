@@ -1,8 +1,3 @@
-using Pkg
-Pkg.add(Pkg.PackageSpec(;name="RobotDynamics", version="0.3.1"))
-Pkg.add(Pkg.PackageSpec(;name="TrajectoryOptimization", version="0.4.1"))
-Pkg.add(Pkg.PackageSpec(;name="Altro", version="0.3.0"))
-
 using Test
 using Algames
 using Altro
