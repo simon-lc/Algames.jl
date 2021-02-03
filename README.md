@@ -21,4 +21,4 @@ The experiments presented in the [RSS 2020 paper](http://www.roboticsproceedings
 ## Quick Start
 To run a simple example of a dynamic game see script in /examples/intro_example.jl. For autonomous driving examples see [AlgamesDriving.jl](https://github.com/simon-lc/AlgamesDriving.jl).
 
-![alt text](https://github.com/RoboticExplorationLab/Algames.jl/blob/master/readme_banner.jpeg?raw=true)
+![alt text](https://github.com/simon-lc/Algames.jl/blob/master/readme_banner.jpeg?raw=true)
