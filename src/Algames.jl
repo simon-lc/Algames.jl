@@ -54,6 +54,9 @@ export
     StateBoundConstraint,
     WallConstraint,
     add_collision_avoidance!,
+    add_state_bound!,
+    add_velocity_bound!,
+    velocity_index,
     add_control_bound!,
     add_circle_constraint!,
     Wall,
@@ -161,6 +164,7 @@ include("constraints/control_bound_constraint.jl")
 include("constraints/wall_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
+include("constraints/velocity_constraint.jl")
 
 # Struct
 include("struct/violations.jl")
