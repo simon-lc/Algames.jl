@@ -74,6 +74,7 @@ function set_traj!(core::NewtonCore, Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd},
     return nothing
 end
 
+
 function get_traj!(core::NewtonCore, Δpdtraj::PrimalDualTraj{KN,n,m,T,SVd},
     Δtraj::AbstractVector) where {KN,n,m,T,SVd}
     N = core.probsize.N
@@ -143,4 +144,15 @@ function Δ_step(pdtraj::PrimalDualTraj, α::T) where {T}
 	# s /= (N-1)*(n+m+n*p)
 	s /= (N-1)*(n+m)
 	return s
+end
+
+function reset_duals!(pdtraj::PrimalDualTraj) where {T}
+	N = pdtraj.probsize.N
+	p = pdtraj.probsize.p
+	for k = 1:N-1
+		for i = 1:p
+			pdtraj.du[i][k] *= 0.0
+		end
+	end
+	return nothing
 end

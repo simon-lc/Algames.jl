@@ -110,3 +110,51 @@
     @test all((core.verti_inds[vstamp], core.horiz_inds[hstamp]) .== idx(core, stamp))
 
 end
+
+
+@testset "Masks" begin
+
+    # Test Vertical Mask
+    N = 6
+    p = 5
+    model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
+    verti_inds = vertical_indices(probsize)
+    n = probsize.n
+    ni = probsize.ni[1]
+    mi = probsize.mi[1]
+
+    msk = []
+    msks = []
+    for i = 1:p
+        ms = vertical_mask(probsize, verti_inds, i, splitted_state=true)
+        m = vertical_mask(probsize, verti_inds, i, splitted_state=false)
+        push!(msk, m)
+        push!(msks, ms)
+        @test length(m) == (N - 1) * (2n + mi)
+        @test length(ms) == (N - 1) * (2ni + mi)
+    end
+    @test length(intersect(msks...)) == 0
+
+    # Test horizontal Mask
+    N = 6
+    p = 5
+    model = UnicycleGame(p=p)
+    probsize = ProblemSize(N,model)
+    horiz_inds = horizontal_indices(probsize)
+    ni = probsize.ni[1]
+    mi = probsize.mi[1]
+
+    msk = []
+    msks = []
+    for i = 1:p
+        m = horizontal_mask(probsize, horiz_inds, i, splitted_state=false)
+        ms = horizontal_mask(probsize, horiz_inds, i, splitted_state=true)
+        push!(msk, m)
+        push!(msks, ms)
+        @test length(m) == (N - 1) * (2n + mi)
+        @test length(ms) == (N - 1) * (2ni + mi)
+    end
+    @test length(intersect(msks...)) == 0
+
+end

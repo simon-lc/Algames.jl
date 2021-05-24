@@ -6,13 +6,23 @@ using Altro
 using BenchmarkTools
 using ForwardDiff
 using LinearAlgebra
+using MeshCat
+using GeometryBasics
 using Parameters
 using Printf
 using Random
 using RobotDynamics
+using Rotations
 using SparseArrays
 using StaticArrays
 using TrajectoryOptimization
+
+# Utils
+export
+    add2sub,
+    addI2sub,
+    sparse_zero!,
+    scn
 
 # Dynamics
 export
@@ -20,6 +30,7 @@ export
     DoubleIntegratorGame,
     UnicycleGame,
     BicycleGame,
+    QuadrotorGame,
     dynamics
 
 # Struct
@@ -53,13 +64,19 @@ export
     ControlBoundConstraint,
     StateBoundConstraint,
     WallConstraint,
+    Wall3DConstraint,
+    CylinderConstraint,
     add_collision_avoidance!,
+    add_spherical_collision_avoidance!,
     add_state_bound!,
     add_velocity_bound!,
     velocity_index,
     add_control_bound!,
     add_circle_constraint!,
+    AbstractWall,
     Wall,
+    Wall3D,
+    CylinderWall,
     add_wall_constraint!,
     set_constraint_params!,
     reset!,
@@ -85,6 +102,8 @@ export
     residual_views,
     jacobian_views,
     dynamics_indices,
+    vertical_mask,
+    horizontal_mask,
     Stamp,
     VStamp,
     HStamp,
@@ -108,15 +127,19 @@ export
     residual_jacobian!,
     regularize_residual!, # need test
     regularize_residual_jacobian!, # need test
-    add2sub,
-    addI2sub,
-    sparse_zero!,
-    scn,
+    residual_norm,
+    ibr_residual!,
+    ibr_residual_jacobian!,
+    regularize_ibr_residual!,
+    regularize_ibr_residual_jacobian!,
     dynamics_residual,
     ∇dynamics!,
     newton_solve!,
     inner_iteration,
-    line_search
+    line_search,
+    ibr_newton_solve!,
+    ibr_inner_iteration!,
+    ibr_line_search
 
 # Active Set
 export
@@ -140,11 +163,16 @@ export
     plot_traj!,
     plot_violation!
 
+# Utils
+include("utils.jl")
+
 # Dynamics
 include("dynamics/game_model.jl")
 include("dynamics/double_integrator.jl")
 include("dynamics/unicycle.jl")
 include("dynamics/bicycle.jl")
+include("dynamics/quadrotor.jl")
+include("dynamics/visuals.jl")
 
 # Struct
 include("struct/problem_size.jl")
@@ -162,9 +190,11 @@ include("struct/options.jl")
 include("constraints/state_bound_constraint.jl")
 include("constraints/control_bound_constraint.jl")
 include("constraints/wall_constraint.jl")
+include("constraints/cylinder_constraint.jl")
 include("constraints/game_constraints.jl")
 include("constraints/constraints_methods.jl")
 include("constraints/velocity_constraint.jl")
+include("constraints/visuals.jl")
 
 # Struct
 include("struct/violations.jl")
