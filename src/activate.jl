@@ -5,6 +5,7 @@ Pkg.activate(joinpath(@__DIR__, ".."))
 
 
 Pkg.activate(joinpath(@__DIR__, "../test"))
+Pkg.activate(joinpath(@__DIR__, "../docs"))
 
 # Pkg.add(Pkg.PackageSpec(;name="RobotDynamics", version="0.3.1"))
 # Pkg.add(Pkg.PackageSpec(;name="TrajectoryOptimization", version="0.4.1"))

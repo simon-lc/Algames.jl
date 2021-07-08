@@ -106,10 +106,10 @@ plot!(plt, cumsum(prob_ibr.stats.t_elap), log.(10, [v.max for v in prob_ibr.stat
 plot!(plt, cumsum(prob_ibr.stats.t_elap), log.(10, [v.max for v in prob_ibr.stats.sta_vio]))
 
 # Visualize the Results
-Algames.plot_traj!(prob_alg.model, prob_alg.pdtraj.pr)
-Algames.plot_traj!(prob_ibr.model, prob_ibr.pdtraj.pr)
-Algames.plot_violation!(prob_alg.stats)
-Algames.plot_violation!(prob_ibr.stats)
+plot(prob_alg.model, prob_alg.pdtraj.pr)
+plot!(prob_ibr.model, prob_ibr.pdtraj.pr)
+plot(prob_alg.stats)
+plot!(prob_ibr.stats)
 const Algames = Main
 using Plots
 
