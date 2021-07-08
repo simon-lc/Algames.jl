@@ -22,3 +22,4 @@ Pkg.activate(joinpath(@__DIR__, "../docs"))
 # Pkg.add("GeometryBasics")
 # using GeometryBasics
 # Pkg.remove("GeometryBasics")
+# pkgs = Pkg.installed()
